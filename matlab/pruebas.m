@@ -23,8 +23,29 @@ if( hacer_calculos )
 		eval(sprintf( 'avg_%d = mean(imgs_%d,1);' ,d,d));
 		eval(sprintf( 'X_%d = (imgs_%d - ones(size(imgs_%d,1),1)*avg_%d)/sqrt(size(imgs_%d,1)-1);' ,d,d,d,d,d));
 
-		% computo la descomposicion svd de Xi
-		eval(sprintf( '[~, ~, V_%d] = svd(X_%d, 0);' ,d,d));
+		% computo los autovectores de la matriz de covarianza (Xi' * Xi)
+		eval(sprintf( '[V_d D_d] = eig(X_%d''*X_%d);' ,d,d));
+
+		% me aseguro que todos los elementos de la diagonal sean >= 0
+		for ii=1:size(V_d,2)
+			if(D_d(ii,ii) < 0)
+				D_d(ii,ii) = -D_d(ii,ii);
+				V_d(:,ii) = -V_d(:,ii);
+			end
+		end
+
+		% ordeno autovectores según orden decreciente de mangitud de los autovalores
+		for ii=2:size(V_d,2)
+			for jj=ii:-1:2
+				if( D_d(jj,jj) > D_d(jj-1,jj-1) )
+					temp = D_d(jj,jj); D_d(jj,jj) = D_d(jj-1,jj-1); D_d(jj-1,jj-1) = temp;
+					temp = V_d(:,jj); V_d(:,jj) = V_d(:,jj-1); V_d(:,jj-1) = temp;
+				end
+			end
+		end
+
+		eval(sprintf( 'V_%d = V_d;' ,d));
+		clear D_d;
 
 		% transformo todas las imágenes del dígito d
 		eval(sprintf( 't_imgs_%d = imgs_%d*V_%d; t_avg_%d = mean(t_imgs_%d,1);' ,d,d,d,d,d));
@@ -35,7 +56,7 @@ end
 
 if( graficar_todos )
 
-	cc = jet(10);
+	cc = hsv(10);
 	figure('units','normalized','outerposition',[0 0 1 1]);hold on;
 	for d=[0 1 2 3 4 5 6 7 8 9]
 		eval(sprintf( 'scatter3(t_imgs_%d(1:20:end,1),t_imgs_%d(1:20:end,2),t_imgs_%d(1:20:end,3),5,cc((1+%d),:));' ,d,d,d,d));
@@ -48,9 +69,9 @@ end
 
 if( correr_tests )
 
-	n = 100;							% cantidad de tests
-	k = 500;							% cantidad de componentes principales
-	modo_debug = true;					% ante cada error, hace un gráfico como el anterior pero
+	n = 250;							% cantidad de tests
+	k = 400;								% cantidad de componentes principales
+	modo_debug = false;					% ante cada error, hace un gráfico como el anterior pero
 										% solo con las clases de interés y el punto que pifió
 
 	hits = 0;
@@ -101,11 +122,13 @@ if( correr_tests )
 			subplot(1,3,3);
 			imshow(uint8(imgg(:,:,im_indx)));
 			title(sprintf( 'Indice de la imagen: %d' ,im_indx));
+
 			resp = input('Pasar a la proxima? (''no'' para salir)\n', 's');
 			if( strcmpi(resp,'n') || strcmpi(resp,'no') )
 				break;
+			else
+				close all;
 			end
-			close all;
 		end
 	end
 
