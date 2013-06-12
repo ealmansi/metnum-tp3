@@ -37,18 +37,22 @@
 		- A_i+1 = R * Q
 		- V = V * Q
 
-- programa generador [recibe: training set image files, delta's | devuelve: archivos con V (uno por cada delta)]
+- programa generador [recibe: training set image/label files, delta's | devuelve: archivos-binarios-de-datos (uno por cada delta)]
 	- parsea el archivo tipo ubyte de mnist, cargando las fotos en una matriz
-	- genera la matriz 'X', y computa 'Y' = Xt * X
+	- genera la matriz 'X', y computa 'Y' = Xt * X  ('Y' es la matriz de covarianza de los datos)
 	- para cada delta
 		- computa los autovectores/autovalores de 'Y'
-		- ordena segun orden decreciente de abs(autovalor)
-		- guarda a un archivo
+		- ordena los autovectores segun orden decreciente de abs(autovalor) -> matriz V
+		- transformo las imagenes usando V
+		- computo el promedio de cada clase (o dígito)
+		- guarda en un archivo binario a la matriz V y los promedios
 
-- programa clasificador [recibe: test set image/label files, k's, archivos con V | devuelve: archivo de resultados]
+- programa clasificador [recibe: test set image/label files, k's, archivos-binarios-de-datos | devuelve: archivo de resultados]
 	- parsea los archivos tipo ubyte de mnist, cargando las fotos en una matriz y las labels en un vector
 	- genero archivo de resultados
-	- para cada archivo con V
+	- para cada archivo-binario-de-datos
+		- cargo V y el promedio de cada clase (o dígito)
 		- para cada k
-			- clasifico todas las fotos, contando los aciertos
-			- anoto resultados en el archivo
+			- clasifico todas las imágenes, comparando contra los promedios
+			- cuento los aciertos
+			- anoto resultados en el archivo de resultados
