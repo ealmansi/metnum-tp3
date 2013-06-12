@@ -9,8 +9,8 @@ if( hacer_cuentas )
 
 	% defino conjuntos de entrenamiento y de prueba
 	total_imgs = size(imgg,3);
-	train_set = 1:5:total_imgs; train_set_size = size(train_set,2);
-	test_set = 2:5:total_imgs; test_set_size = size(test_set,2);
+	train_set = 1:total_imgs; train_set_size = size(train_set,2);
+	test_set = 1:total_imgs; test_set_size = size(test_set,2);
 
 	% obtengo los conjuntos y transformo las imagenes a filas
 	train_imgs = images_2_rows(double(imgg(:,:,train_set)));
@@ -25,8 +25,13 @@ if( hacer_cuentas )
 	X = train_imgs - ones(train_set_size,1) * avg_im;
 	X = X / sqrt(train_set_size - 1);
 
-	% obtengo la matriz de transformación V transpuesta, y transformo las imagenes
-	[~, ~, V] = svd(X);
+	% obtengo la matriz de transformación V transpuesta
+	[V, D] = eig(X'*X);
+	[V, D] = sortem(V, D);
+	clear X;
+	clear D;
+
+	% transformo las imagenes
 	t_train_imgs = train_imgs*V;
 
 	% obtengo el promedio de cada clase en el espacio transformado
@@ -87,13 +92,13 @@ end
 if( hacer_grafico )
 	cc = jet(10);
 	figure('units','normalized','outerposition',[0 0 1 1]);hold on;
-	scatter3(t_train_imgs_0(1:2:end,1),t_train_imgs_0(1:2:end,2),t_train_imgs_0(1:2:end,3),20,cc((1+0),:), 'fill');
+	scatter3(t_train_imgs_0(1:10:end,1),t_train_imgs_0(1:10:end,2),t_train_imgs_0(1:10:end,3),20,cc((1+0),:), 'fill');
 	scatter3(t_avg_0(1), t_avg_0(2), t_avg_0(3), 100, cc((1+0),:), 'fill');
 	text(t_avg_0(1), t_avg_0(2), t_avg_0(3), '0','VerticalAlignment','bottom','HorizontalAlignment','right');
-	scatter3(t_train_imgs_5(1:2:end,1),t_train_imgs_5(1:2:end,2),t_train_imgs_5(1:2:end,3),20,cc((1+5),:), 'fill');
+	scatter3(t_train_imgs_5(1:10:end,1),t_train_imgs_5(1:10:end,2),t_train_imgs_5(1:10:end,3),20,cc((1+5),:), 'fill');
 	scatter3(t_avg_5(1), t_avg_5(2), t_avg_5(3), 100, cc((1+5),:), 'fill');
 	text(t_avg_5(1), t_avg_5(2), t_avg_5(3), '5','VerticalAlignment','bottom','HorizontalAlignment','right');
-	scatter3(t_train_imgs_8(1:2:end,1),t_train_imgs_8(1:2:end,2),t_train_imgs_8(1:2:end,3),20,cc((1+8),:), 'fill');
+	scatter3(t_train_imgs_8(1:10:end,1),t_train_imgs_8(1:10:end,2),t_train_imgs_8(1:10:end,3),20,cc((1+8),:), 'fill');
 	scatter3(t_avg_8(1), t_avg_8(2), t_avg_8(3), 100, cc((1+8),:), 'fill');
 	text(t_avg_8(1), t_avg_8(2), t_avg_8(3), '8','VerticalAlignment','bottom','HorizontalAlignment','right');
 
