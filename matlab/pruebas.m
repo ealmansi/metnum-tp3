@@ -1,6 +1,6 @@
-hacer_cuentas = false;
+hacer_cuentas = true;
 hacer_tests = true;
-hacer_grafico = false;
+hacer_grafico = true;
 
 if( hacer_cuentas )
 	% cargo las imágenes
