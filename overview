@@ -29,19 +29,20 @@
 		- la influencia de la cantidad 'k' de componentes principales
 		- la influencia de la precision en el calculo de los autovalores ('delta')
 
-- algoritmo QR [recibe: A en R^n.n, delta en R | devuelve: V]
+- algoritmo QR [recibe: A en R^n.n, delta en R | devuelve: V, D]
 	- tomo A_0 = A
 	- V = identidad(n)
 	- mientras !condicion_de_parada(delta)
 		- factorizo A_i en Q R
 		- A_i+1 = R * Q
 		- V = V * Q
+	- D = A_i
 
 - programa generador [recibe: training set image/label files, delta's | devuelve: archivos-binarios-de-datos (uno por cada delta)]
 	- parsea el archivo tipo ubyte de mnist, cargando las fotos en una matriz
-	- genera la matriz 'X', y computa 'Y' = Xt * X  ('Y' es la matriz de covarianza de los datos)
+	- genera la matriz 'X', y computa 'Y' = Xt * X
 	- para cada delta
-		- computa los autovectores/autovalores de 'Y'
+		- computa los autovectores/autovalores de 'Y' (algoritmo QR)
 		- ordena los autovectores segun orden decreciente de abs(autovalor) -> matriz V
 		- transformo las imagenes usando V
 		- computo el promedio de cada clase (o dígito)
