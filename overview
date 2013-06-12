@@ -1,0 +1,38 @@
+- implementar un metodo de reconocimiento de digitos manuscritos
+	- basado en la descomposicion en valores singulares
+	- "analizar empiricamente los parametros principales del metodo"
+
+- conjunto de imágenes de digitos manuscritos (MNIST).
+
+- a partir del conjunto de n imágenes:
+	- xi en R^m es la i-ésima imagen ordenada según row-major-order
+	- u = promedio xi
+	- X en R^n.m tiene en cada fila a (xi - u)/sqrt(n-1)
+	- obtengo la matriz 'V' de la descomposición svd de X
+	- uso la matriz Vt para transformar las imágenes ('transformación característica')
+
+- para clasificar una imagen desconocida 'x' usando 'k' componentes:
+	- para cada dígito
+		- obtengo el promedio de las transformadas de las imágenes etiquetadas con ese dígito
+	- transformo la imagen desconocida 'x' con la Vt
+	- posible criterio:
+		- computo la distancia de la transformada de 'x' contra el promedio de cada dígito
+		- me quedo con las primeras 'k' componentes de la diferencia
+		- clasifico a 'x' en la clase donde la diferencia tenga menor magnitud en norma
+
+- enunciado
+	- implementar un programa que lea desde archivos las imagenes de entrenamiento de distintos digitos manuscritos
+	- utilizando la descomposicion en valores singulares, calcula la transformacion caracteristica
+	- implementar algun metodo de estimacion de autovalores/autovectores
+	- dada una nueva imagen de un digito manuscrito, el programa debera determinar a que digito corresponde
+	- realizar experimentos para:
+		- medir la efectividad del reconocimiento
+		- la influencia de la precision en el calculo de los autovalores
+
+- algoritmo QR [recibe: A en R^n.n, delta en R | devuelve: V]
+	- tomo A_0 = A
+	- V = identidad(n)
+	- mientras !condicion_de_parada(delta)
+		- factorizo A_i en Q R
+		- A_i+1 = R * Q
+		- V = V * Q
