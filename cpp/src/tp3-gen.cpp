@@ -5,7 +5,7 @@ using namespace std;
 #include "cmd-args.h"
 #include "mmatrix.h"
 #include "data-io.h"
-#include "gen-algorithms.h"
+#include "algorithms.h"
 
 /*
 - programa generador [recibe: training set image/label files, delta's | devuelve: archivos-binarios-de-datos (uno por cada delta)]
@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
 
 	MMatrix images;
 	vector<int> labels;
-	load_data_gen(args.images_filename, args.labels_filename, images, labels);
+	load_mnist_data(args.images_filename, args.labels_filename, images, labels);
 	
 	MMatrix normalized_images = normalize(images);
 	MMatrix cov_mat = compute_covariance_matrix(normalized_images);
@@ -40,7 +40,7 @@ int main(int argc, char const *argv[])
 		
 		MMatrix avgs = compute_average_by_digit(transf_images, labels);
 
-		write_data_gen(*delta, V, avgs);
+		write_data_file(*delta, V, avgs);
 	}
 
 	return 0;
