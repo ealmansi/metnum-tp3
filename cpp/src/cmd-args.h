@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+//	//	//
+
 struct CmdArgsGen
 {
 	string images_filename;

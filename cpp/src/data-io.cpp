@@ -3,8 +3,10 @@
 using namespace std;
 
 #include "data-io.h"
+#include "mmatrix.h"
 
-MMatrix& images load_ubyte_images(string filename)
+
+MMatrix& load_ubyte_images(string filename)
 {
 
 }

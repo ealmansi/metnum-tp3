@@ -2,6 +2,11 @@
 #include <vector>
 using namespace std;
 
+#include "cmd-args.h"
+#include "mmatrix.h"
+#include "data-io.h"
+#include "gen-algorithms.h"
+
 /*
 - programa generador [recibe: training set image/label files, delta's | devuelve: archivos-binarios-de-datos (uno por cada delta)]
 	- parsea el archivo tipo ubyte de mnist, cargando las fotos en una matriz
@@ -22,7 +27,8 @@ int main(int argc, char const *argv[])
 	vector<int> labels;
 	load_data_gen(args.images_filename, args.labels_filename, images, labels);
 	
-	MMatrix cov_mat = compute_covariance_matrix(normalize(images));
+	MMatrix normalized_images = normalize(images);
+	MMatrix cov_mat = compute_covariance_matrix(normalized_images);
 
 	vector<double>::const_iterator delta;
 	for (delta = args.deltas.begin(); delta != args.deltas.end(); ++delta)
@@ -34,7 +40,7 @@ int main(int argc, char const *argv[])
 		
 		MMatrix avgs = compute_average_by_digit(transf_images, labels);
 
-		write_data_gen(delta, V, avgs);
+		write_data_gen(*delta, V, avgs);
 	}
 
 	return 0;

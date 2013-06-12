@@ -1,6 +1,12 @@
 #ifndef __GEN_ALGORITHMS_H__
 #define __GEN_ALGORITHMS_H__
 
+#include <vector>
+
+#include "mmatrix.h"
+
+//	//	//
+
 MMatrix normalize(MMatrix& mat);
 
 MMatrix compute_covariance_matrix(MMatrix& mat);
@@ -13,6 +19,6 @@ void sort_eigenvectors(MMatrix& V, MMatrix& D);
 
 MMatrix transform_images(MMatrix& images, MMatrix& V);
 
-void compute_average_by_digit(MMatrix& transf_images, vector<int>& labels);
+MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels);
 
 #endif // __GEN_ALGORITHMS_H__
