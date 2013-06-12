@@ -30,16 +30,16 @@ if( hacer_cuentas )
 	t_train_imgs = train_imgs*V;
 
 	% obtengo el promedio de cada clase en el espacio transformado
-	t_train_imgs_0 = t_train_imgs(train_labels == 0,:); t_avg_im_0 = mean(t_imgs_0,1);
-	t_train_imgs_1 = t_train_imgs(train_labels == 1,:); t_avg_im_1 = mean(t_imgs_1,1);
-	t_train_imgs_2 = t_train_imgs(train_labels == 2,:); t_avg_im_2 = mean(t_imgs_2,1);
-	t_train_imgs_3 = t_train_imgs(train_labels == 3,:); t_avg_im_3 = mean(t_imgs_3,1);
-	t_train_imgs_4 = t_train_imgs(train_labels == 4,:); t_avg_im_4 = mean(t_imgs_4,1);
-	t_train_imgs_5 = t_train_imgs(train_labels == 5,:); t_avg_im_5 = mean(t_imgs_5,1);
-	t_train_imgs_6 = t_train_imgs(train_labels == 6,:); t_avg_im_6 = mean(t_imgs_6,1);
-	t_train_imgs_7 = t_train_imgs(train_labels == 7,:); t_avg_im_7 = mean(t_imgs_7,1);
-	t_train_imgs_8 = t_train_imgs(train_labels == 8,:); t_avg_im_8 = mean(t_imgs_8,1);
-	t_train_imgs_9 = t_train_imgs(train_labels == 9,:); t_avg_im_9 = mean(t_imgs_9,1);
+	t_train_imgs_0 = t_train_imgs(train_labels == 0,:); t_avg_0 = mean(t_train_imgs_0,1);
+	t_train_imgs_1 = t_train_imgs(train_labels == 1,:); t_avg_1 = mean(t_train_imgs_1,1);
+	t_train_imgs_2 = t_train_imgs(train_labels == 2,:); t_avg_2 = mean(t_train_imgs_2,1);
+	t_train_imgs_3 = t_train_imgs(train_labels == 3,:); t_avg_3 = mean(t_train_imgs_3,1);
+	t_train_imgs_4 = t_train_imgs(train_labels == 4,:); t_avg_4 = mean(t_train_imgs_4,1);
+	t_train_imgs_5 = t_train_imgs(train_labels == 5,:); t_avg_5 = mean(t_train_imgs_5,1);
+	t_train_imgs_6 = t_train_imgs(train_labels == 6,:); t_avg_6 = mean(t_train_imgs_6,1);
+	t_train_imgs_7 = t_train_imgs(train_labels == 7,:); t_avg_7 = mean(t_train_imgs_7,1);
+	t_train_imgs_8 = t_train_imgs(train_labels == 8,:); t_avg_8 = mean(t_train_imgs_8,1);
+	t_train_imgs_9 = t_train_imgs(train_labels == 9,:); t_avg_9 = mean(t_train_imgs_9,1);
 
 end
 
@@ -87,13 +87,13 @@ end
 if( hacer_grafico )
 	cc = jet(10);
 	figure('units','normalized','outerposition',[0 0 1 1]);hold on;
-	scatter3(t_imgs_0(1:2:end,1),t_imgs_0(1:2:end,2),t_imgs_0(1:2:end,3),20,cc((1+0),:), 'fill');
+	scatter3(t_train_imgs_0(1:2:end,1),t_train_imgs_0(1:2:end,2),t_train_imgs_0(1:2:end,3),20,cc((1+0),:), 'fill');
 	scatter3(t_avg_0(1), t_avg_0(2), t_avg_0(3), 100, cc((1+0),:), 'fill');
 	text(t_avg_0(1), t_avg_0(2), t_avg_0(3), '0','VerticalAlignment','bottom','HorizontalAlignment','right');
-	scatter3(t_imgs_5(1:2:end,1),t_imgs_5(1:2:end,2),t_imgs_5(1:2:end,3),20,cc((1+5),:), 'fill');
+	scatter3(t_train_imgs_5(1:2:end,1),t_train_imgs_5(1:2:end,2),t_train_imgs_5(1:2:end,3),20,cc((1+5),:), 'fill');
 	scatter3(t_avg_5(1), t_avg_5(2), t_avg_5(3), 100, cc((1+5),:), 'fill');
 	text(t_avg_5(1), t_avg_5(2), t_avg_5(3), '5','VerticalAlignment','bottom','HorizontalAlignment','right');
-	scatter3(t_imgs_8(1:2:end,1),t_imgs_8(1:2:end,2),t_imgs_8(1:2:end,3),20,cc((1+8),:), 'fill');
+	scatter3(t_train_imgs_8(1:2:end,1),t_train_imgs_8(1:2:end,2),t_train_imgs_8(1:2:end,3),20,cc((1+8),:), 'fill');
 	scatter3(t_avg_8(1), t_avg_8(2), t_avg_8(3), 100, cc((1+8),:), 'fill');
 	text(t_avg_8(1), t_avg_8(2), t_avg_8(3), '8','VerticalAlignment','bottom','HorizontalAlignment','right');
 
