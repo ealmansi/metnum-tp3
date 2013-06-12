@@ -25,9 +25,9 @@
 	- utilizando la descomposicion en valores singulares, calcula la transformacion caracteristica
 	- implementar algun metodo de estimacion de autovalores/autovectores
 	- dada una nueva imagen de un digito manuscrito, el programa debera determinar a que digito corresponde
-	- realizar experimentos para:
-		- medir la efectividad del reconocimiento
-		- la influencia de la precision en el calculo de los autovalores
+	- realizar experimentos para medir la efectividad del reconocimiento ante:
+		- la influencia de la cantidad 'k' de componentes principales
+		- la influencia de la precision en el calculo de los autovalores ('delta')
 
 - algoritmo QR [recibe: A en R^n.n, delta en R | devuelve: V]
 	- tomo A_0 = A
@@ -36,3 +36,19 @@
 		- factorizo A_i en Q R
 		- A_i+1 = R * Q
 		- V = V * Q
+
+- programa generador [recibe: training set image files, delta's | devuelve: archivos con V (uno por cada delta)]
+	- parsea el archivo tipo ubyte de mnist, cargando las fotos en una matriz
+	- genera la matriz 'X', y computa 'Y' = Xt * X
+	- para cada delta
+		- computa los autovectores/autovalores de 'Y'
+		- ordena segun orden decreciente de abs(autovalor)
+		- guarda a un archivo
+
+- programa clasificador [recibe: test set image/label files, k's, archivos con V | devuelve: archivo de resultados]
+	- parsea los archivos tipo ubyte de mnist, cargando las fotos en una matriz y las labels en un vector
+	- genero archivo de resultados
+	- para cada archivo con V
+		- para cada k
+			- clasifico todas las fotos, contando los aciertos
+			- anoto resultados en el archivo
