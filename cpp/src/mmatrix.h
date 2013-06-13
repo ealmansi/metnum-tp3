@@ -5,6 +5,9 @@ class MMatrix
 {
 public:
 	MMatrix();
+
+	int rows() const;
+	double& operator()(int i, int j);
 };
 
 #endif	// __MMATRIX_H__
