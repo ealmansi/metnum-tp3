@@ -5,7 +5,7 @@
 
 #include "mmatrix.h"
 
-//	//	generation of V	//	//
+//	//	gen	//	//
 
 MMatrix normalize(MMatrix& mat);
 
@@ -21,7 +21,7 @@ MMatrix transform_images(MMatrix& images, MMatrix& V);
 
 MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels);
 
-//	//	classification	//	//
+//	//	classif	//	//
 
 int classify_images(MMatrix& images, vector<int>& labels, MMatrix& V, MMatrix& avgs, int k);
 

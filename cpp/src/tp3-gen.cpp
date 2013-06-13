@@ -19,7 +19,7 @@ using namespace std;
 		- guarda en un archivo binario a la matriz V y los promedios
 */
 
-int main(int argc, char const *argv[])
+int main(int argc, char** argv)
 {
 	CmdArgsGen args = parse_cmd_args_gen(argc, argv);
 
@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
 	MMatrix cov_mat = compute_covariance_matrix(normalized_images);
 
 	vector<double>::const_iterator delta;
-	for (delta = args.deltas.begin(); delta != args.deltas.end(); ++delta)
+	for (delta = args.delta_values.begin(); delta != args.delta_values.end(); ++delta)
 	{
 		MMatrix V, D;
 		eigen_decomposition(cov_mat, *delta, V, D);

@@ -5,7 +5,7 @@ using namespace std;
 #include "algorithms.h"
 #include "mmatrix.h"
 
-//	//	generation of V	//	//
+//	//	gen	//	//
 
 MMatrix normalize(MMatrix& mat)
 {
@@ -49,7 +49,7 @@ MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels)
 
 }
 
-//	//	classification	//	//
+//	//	classif	//	//
 
 int classify_image(MMatrix& image_row, MMatrix& V, MMatrix& avgs, int k)
 {

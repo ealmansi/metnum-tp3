@@ -20,7 +20,7 @@ using namespace std;
 			- anoto resultados en el archivo de resultados
 */
 
-int main(int argc, char const *argv[])
+int main(int argc, char** argv)
 {
 	CmdArgsClassif args = parse_cmd_args_classif(argc, argv);
 

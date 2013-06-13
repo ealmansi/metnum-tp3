@@ -10,10 +10,10 @@ struct CmdArgsGen
 {
 	string images_filename;
 	string labels_filename;
-	vector<double> deltas;
+	vector<double> delta_values;
 };
 
-CmdArgsGen parse_cmd_args_gen(int argc, char const *argv[]);
+CmdArgsGen parse_cmd_args_gen(int argc, char** argv);
 
 struct CmdArgsClassif
 {
@@ -24,6 +24,6 @@ struct CmdArgsClassif
 	vector<int> k_values;
 };
 
-CmdArgsClassif parse_cmd_args_classif(int argc, char const *argv[]);
+CmdArgsClassif parse_cmd_args_classif(int argc, char** argv);
 
 #endif	//__CMD_ARGS_H__
