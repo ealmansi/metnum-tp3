@@ -14,6 +14,9 @@ using namespace std;
 #define		IMAGE_HEIGHT_PXS	28
 #define		IMAGE_WIDTH_PXS		28
 
+#define		BYTE_2_INT(buff)		 	((int)(*(buff)))
+#define 	BYTE_ARRAY_2_INT(buff) 		((BYTE_2_INT(buff) << 24) + (BYTE_2_INT(buff+1) << 16) + (BYTE_2_INT(buff+2) << 8)  + (BYTE_2_INT(buff+3) << 0))
+
 void load_ubyte_images(string filename, MMatrix& images)
 {
 	ifstream file (filename.c_str(), ios::in | ios::binary);
@@ -23,23 +26,23 @@ void load_ubyte_images(string filename, MMatrix& images)
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int magic_number = (((int)buffer[0] << 24) + ((int)buffer[1] << 16) + ((int)buffer[2] << 8) + ((int)buffer[3]));
-
+	int magic_number = BYTE_ARRAY_2_INT(buffer);
+	
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_images = (((int)buffer[0] << 24) + ((int)buffer[1] << 16) + ((int)buffer[2] << 8) + ((int)buffer[3]));
-
+	int number_of_images = BYTE_ARRAY_2_INT(buffer);
+	
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_rows = (((int)buffer[0] << 24) + ((int)buffer[1] << 16) + ((int)buffer[2] << 8) + ((int)buffer[3]));
-
+	int number_of_rows = BYTE_ARRAY_2_INT(buffer);
+	
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_cols = (((int)buffer[0] << 24) + ((int)buffer[1] << 16) + ((int)buffer[2] << 8) + ((int)buffer[3]));
-
+	int number_of_cols = BYTE_ARRAY_2_INT(buffer);
+	
 	if( number_of_rows != IMAGE_HEIGHT_PXS || number_of_cols != IMAGE_WIDTH_PXS )
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 
@@ -49,7 +52,7 @@ void load_ubyte_images(string filename, MMatrix& images)
 			file.read(buffer, 1);
 			if(!file)
 				DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-			images(i,j) = ((double)buffer[0]);
+			images(i,j) = ((double)BYTE_2_INT(buffer));
 		}
 
 	file.close();
@@ -64,19 +67,19 @@ void load_ubyte_labels(string filename, vector<int>& labels)
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int magic_number = (((int)buffer[0] << 24) + ((int)buffer[1] << 16) + ((int)buffer[2] << 8) + ((int)buffer[3]));
+	int magic_number = BYTE_ARRAY_2_INT(buffer);
 
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_items = (((int)buffer[0] << 24) + ((int)buffer[1] << 16) + ((int)buffer[2] << 8) + ((int)buffer[3]));
+	int number_of_items = BYTE_ARRAY_2_INT(buffer);
 
 	for (int i = 0; i < number_of_items; ++i)
 	{
 		file.read(buffer, 1);
 		if(!file)
 			DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-		labels.push_back(((int)buffer[0]));
+		labels.push_back(BYTE_2_INT(buffer));
 	}
 
 	file.close();
