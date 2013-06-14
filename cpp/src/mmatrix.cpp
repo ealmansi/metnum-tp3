@@ -1,3 +1,7 @@
+#include <iomanip>
+#include <iostream>
+using namespace std;
+
 #include "../lib/commons.h"
 
 #include "mmatrix.h"
@@ -176,4 +180,33 @@ void MMatrix::multiply_in_place(const MMatrix& rhs)
 		for (int k = 0; k < _cols; ++k)
 			operator()(i,j) += aux_row(k) * rhs(k,j);
 	});
+}
+
+MMatrix MMatrix::t() const
+{
+	MMatrix res(_cols, _rows);
+	MMATRIX_MAP_IJ(res, operator()(j,i));
+
+	return res;
+}
+
+ostream& operator<<(ostream &os, const MMatrix &mat)
+{
+	os << "[";
+	for (int i = 0; i < mat.rows(); ++i)
+	{
+		for (int j = 0; j < mat.cols(); ++j)
+		{
+			if( 0 < i && j == 0 )
+				os << '\t';
+			os << setw(10) << mat(i,j);
+			if(j + 1 < mat.cols())
+				os << " ";
+		}
+		if(i + 1 < mat.rows())
+			os << endl;
+	}
+	os << "]";
+
+	return os;
 }

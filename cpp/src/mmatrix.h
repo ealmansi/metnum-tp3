@@ -29,6 +29,8 @@ public:
 	MMatrix& operator/=(double rhs);
 	void multiply_in_place(const MMatrix& rhs);
 
+	MMatrix t() const;		// transposition
+
 private:
 	void initialize();
 	void clean_up();
@@ -37,6 +39,8 @@ private:
 	int _cols;
 	double* _data;
 };
+
+ostream& operator<<(ostream &os, const MMatrix &mat);
 
 #define		MMATRIX_WALK_IJ(mat, code)						\
 {															\

@@ -16,7 +16,7 @@ OBJ-MAIN-TESTS =					 	\
 	src/matrix-tests.o 					\
 
 clean:
-	@$(RM) -rf $(OBJS) $(OBJ-MAIN-GEN) $(OBJ-MAIN-CLASSIF)
+	@$(RM) -rf $(OBJS) $(OBJ-MAIN-GEN) $(OBJ-MAIN-CLASSIF) $(OBJ-MAIN-TESTS)
 
 %.o: %.cpp
 	@g++ -c -o $@ $<

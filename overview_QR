@@ -1,0 +1,42 @@
+- algoritmo QR [recibe: A en R^n.n, delta en R | devuelve: V, D]
+	- tomo A_0 = A
+	- V = identidad(n)
+	- mientras !condicion_de_parada(delta)
+		- factorizo A_i en Q R
+		- A_i+1 = R * Q
+		- V = V * Q
+	- D = A_i
+
+
+D = A
+V = I
+Q
+while !cond(delta)
+	fact_QR_in_place(&Q,&D);
+	R.multiply_in_place(Q)
+	V.multiply_in_place(Q)
+
+
+Q3Q2Q1
+
+c 	0 	0 	s 	0 	0		c 	0 	s 	0 	0 	0			c 	s 	0 	0 	0 	0
+0 	1 	0 	0 	0 	0		0 	1 	0 	0 	0 	0			-s 	c 	0 	0 	0 	0
+0 	0 	1 	0 	0 	0		-s 	0 	c 	0 	0 	0			0 	0 	1 	0 	0 	0
+-s 	0 	0 	c 	0 	0		0 	0 	0 	1 	0 	0			0 	0 	0 	1 	0 	0
+0 	0 	0 	0 	1 	0		0 	0 	0 	0 	1 	0			0 	0 	0 	0 	1 	0
+0 	0 	0 	0 	0 	1		0 	0 	0 	0 	0 	1			0 	0 	0 	0 	0 	1
+
+
+cc 	cs 	s 	0 	0 	0
+-s 	c 	0 	0 	0 	0
+-sc	-ss	c 	0 	0 	0
+0 	0 	0 	1 	0 	0
+0 	0 	0 	0 	1 	0
+0 	0 	0 	0 	0 	1
+
+c 	0 	0 	s 	0 	0		c 	0 	s 	0 	0 	0			1	0 	0 	0 	0 	0
+0 	1 	0 	0 	0 	0		0 	1 	0 	0 	0 	0			0 	c 	s 	0 	0 	0
+0 	0 	1 	0 	0 	0		-s 	0 	c 	0 	0 	0			0 	-s 	c 	0 	0 	0
+-s 	0 	0 	c 	0 	0		0 	0 	0 	1 	0 	0			0 	0 	0 	1 	0 	0
+0 	0 	0 	0 	1 	0		0 	0 	0 	0 	1 	0			0 	0 	0 	0 	1 	0
+0 	0 	0 	0 	0 	1		0 	0 	0 	0 	0 	1			0 	0 	0 	0 	0 	1

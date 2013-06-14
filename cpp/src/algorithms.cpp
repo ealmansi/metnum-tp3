@@ -1,3 +1,4 @@
+#include <cmath>
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -62,7 +63,31 @@ double compute_sum_ignoring_diagonal(MMatrix& mat)
 
 void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 {
+	Q = identity_matrix(A.rows());
+	for (int i = 0; i < A.cols(); ++i)
+		for (int j = i+1; j < A.rows(); ++j)
+		{
+			double x1 = A(i,i), x2 = A(j,i);
+			double r = sqrt(x1 * x1 + x2 * x2);
+			double c = x1 / r, s = x2 / r;
 
+			A(i,i) = r;
+			A(j,i) = 0;
+			for (int k = 0; k < A.cols(); ++k)
+			{
+				double q1 = Q(i,k), q2 = Q(j,k);
+				Q(i,k) = c * q1 + s * q2;
+				Q(j,k) = -s * q1 + c * q2;
+				if( i < k )
+				{
+					double x1 = A(i,k), x2 = A(j,k);
+					A(i,k) = c * x1 + s * x2;
+					A(j,k) = -s * x1 + c * x2;
+				}
+			}
+		}
+
+	Q = Q.t();
 }
 
 void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
