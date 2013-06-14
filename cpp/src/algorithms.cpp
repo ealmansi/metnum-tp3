@@ -2,8 +2,13 @@
 #include <iostream>
 using namespace std;
 
+#include "../lib/commons.h"
 #include "algorithms.h"
 #include "mmatrix.h"
+
+#define		CONVERGENCE_NOT_ATTAINED(it, dlt)	("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "), dada una tolerancia delta = " + double2str(dlt))
+
+#define		MAX_ITERATIONS		10
 
 //	//	gen	//	//
 
@@ -35,9 +40,47 @@ MMatrix compute_covariance_matrix(MMatrix& mat)
 	return cov_mat;
 }
 
-void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
+MMatrix identity_matrix(int n)
+{
+	MMatrix res(n,n, 0.0);
+	for (int i = 0; i < n; ++i)
+		res(i,i) = 1;
+
+	return res;
+}
+
+double compute_sum_ignoring_diagonal(MMatrix& mat)
+{
+	double res = 0;
+	MMATRIX_WALK_IJ(mat,{
+		if(i == j) continue;
+		res += mat(i,j);
+	});
+
+	return res;
+}
+
+void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 {
 
+}
+
+void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
+{
+	D = mat;
+	V = identity_matrix(mat.rows());
+	MMatrix Q(mat.rows(), mat.rows());
+
+	int iteration_count = 0;
+	while( iteration_count++ < MAX_ITERATIONS && delta < compute_sum_ignoring_diagonal(D) )
+	{
+		QR_factorization_in_place(Q,D);
+		D.multiply_in_place(Q);
+		V.multiply_in_place(Q);
+	}
+
+	if( iteration_count == MAX_ITERATIONS )
+		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED(iteration_count, delta));
 }
 
 void ensure_positive_diagonal(MMatrix& V, MMatrix& D)

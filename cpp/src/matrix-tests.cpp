@@ -13,14 +13,21 @@ int main(int argc, char** argv)
 {
 	srand(time(0));
 
-	MMatrix mat(5,3);
-	MMATRIX_MAP_IJ(mat, rand()%10);
+	MMatrix mat1(5,3);
+	MMATRIX_MAP_IJ(mat1, rand()%10);
+	print_mat(mat1);
 
-	MMatrix normalized = normalize(mat);
-	MMatrix cov_mat = compute_covariance_matrix(normalized);
+	MMatrix mat2(3,3);
+	MMATRIX_MAP_IJ(mat2, rand()%10);
+	print_mat(mat2);
 
-	print_mat(mat);
+	mat1.multiply_in_place(mat2);
+	print_mat(mat1);
+
+	MMatrix normalized = normalize(mat1);
 	print_mat(normalized);
+
+	MMatrix cov_mat = compute_covariance_matrix(normalized);
 	print_mat(cov_mat);
 
 	return 0;
@@ -38,4 +45,5 @@ void print_mat(MMatrix& mat)
 		}
 		cout << endl;
 	}
+	cout << endl;
 }

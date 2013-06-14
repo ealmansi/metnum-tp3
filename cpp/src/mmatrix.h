@@ -10,12 +10,15 @@ public:
 	MMatrix(const MMatrix& mat);
 	~MMatrix();
 	void set_size(int rows, int cols);
+	void copy_values(const MMatrix& rvalue);
 
 	int rows() const;
 	int cols() const;
 
 	MMatrix row(int r) const;
 	MMatrix col(int c) const;
+
+	MMatrix& operator=(const MMatrix& rvalue);
 
 	double& operator()(int n);
 	double operator()(int n) const;
@@ -24,11 +27,11 @@ public:
 
 	MMatrix operator-(const MMatrix& rhs) const;
 	MMatrix& operator/=(double rhs);
+	void multiply_in_place(const MMatrix& rhs);
 
 private:
 	void initialize();
 	void clean_up();
-	static void copy_values(MMatrix& lvalue, const MMatrix& rvalue);
 
 	int _rows;
 	int _cols;

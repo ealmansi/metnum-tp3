@@ -25,4 +25,11 @@ inline std::string int2str(int n)
 	return ss.str();
 }
 
+inline std::string double2str(double f)
+{
+	std::stringstream ss;
+	ss << f;
+	return ss.str();
+}
+
 #endif	// __COMMON_MACROS_H__

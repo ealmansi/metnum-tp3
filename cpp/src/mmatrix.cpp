@@ -2,10 +2,16 @@
 
 #include "mmatrix.h"
 
-#define 	INVALID_MATRIX_SIZE(rows,cols)			("Tamaño de matriz inválido; filas: " + int2str(rows) + ", columnas: " + int2str(cols))
-#define 	OUT_OF_BOUNDS(i,j)						("Índices fuera de rango; i: " + int2str(i) + ", j: " + int2str(j))
-#define 	OUT_OF_BOUNDS_LINEAR(n)					("Índice lineal fuera de rango; i: " + int2str(n))
-#define		DIMENSIONS_MISMATCH(r1,r2,c1,c2)		("Las dimensiones no concuerdan; el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")
+#define 	INVALID_MATRIX_SIZE(rows,cols)			\
+				("Tamaño de matriz inválido; filas: " + int2str(rows) + ", columnas: " + int2str(cols))
+#define 	OUT_OF_BOUNDS(i,j)						\
+				("Índices fuera de rango; i: " + int2str(i) + ", j: " + int2str(j))
+#define 	OUT_OF_BOUNDS_LINEAR(n)					\
+				("Índice lineal fuera de rango; i: " + int2str(n))
+#define		DIMENSIONS_MISMATCH(r1,r2,c1,c2)		\
+				("Las dimensiones no concuerdan; el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")
+#define		DIMENSIONS_MISMATCH_MULT_INPLACE(r1,r2,c1,c2)	\
+				("Las dimensiones no concuerdan para la multiplicación in situ (el producto debe estar definido y la matriz derecha debe ser cuadrada); el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")
 
 #define		IN_RANGE(a,x,b)				(((a) <= (x)) && ((x) < (b)))
 #define		NOT_IN_RANGE(a,x,b)			(!IN_RANGE((a),(x),(b)))
@@ -34,7 +40,7 @@ MMatrix::MMatrix(const MMatrix& mat)
 {
 	initialize();
 	set_size(mat.rows(), mat.cols());
-	copy_values(*this, mat);
+	copy_values(mat);
 }
 
 MMatrix::~MMatrix()
@@ -66,12 +72,12 @@ void MMatrix::set_size(int rows, int cols)
 	_cols = cols;
 }
 
-void MMatrix::copy_values(MMatrix& lvalue, const MMatrix& rvalue)
+void MMatrix::copy_values(const MMatrix& rvalue)
 {
-	if(lvalue.rows() != rvalue.rows() || lvalue.cols() != rvalue.cols())
-		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(lvalue.rows(), rvalue.rows(), lvalue.cols(), rvalue.cols()));
+	if(_rows != rvalue.rows() || _cols != rvalue.cols())
+		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rvalue.rows(), _cols, rvalue.cols()));
 
-	MMATRIX_MAP_IJ(lvalue, rvalue(i,j));
+	MMATRIX_MAP_IJ(*this, rvalue(i,j));
 }
 
 int MMatrix::rows() const
@@ -100,6 +106,16 @@ MMatrix MMatrix::col(int c) const
 	return col;
 }
 
+MMatrix& MMatrix::operator=(const MMatrix& rvalue)
+{
+	if(_rows != rvalue.rows() || _cols != rvalue.cols())
+		set_size(rvalue.rows(), rvalue.cols());
+
+	copy_values(rvalue);
+
+	return *this;
+}
+
 double& MMatrix::operator()(int n)
 {
 	if(NOT_IN_RANGE(0, n, _rows * _cols))
@@ -110,7 +126,7 @@ double& MMatrix::operator()(int n)
 
 double MMatrix::operator()(int n) const
 {
-	return operator()(n);
+	return _data[n];
 }
 
 double& MMatrix::operator()(int i, int j)
@@ -123,16 +139,19 @@ double& MMatrix::operator()(int i, int j)
 
 double MMatrix::operator()(int i, int j) const
 {
-	return operator()(i,j);
+	if(NOT_IN_RANGE(0,i,_rows) || NOT_IN_RANGE(0,j,_cols))
+		DISPLAY_ERROR_AND_EXIT(OUT_OF_BOUNDS(i,j));
+	
+	return _data[i*_cols+j];
 }
 
-MMatrix MMatrix::operator-(const MMatrix& rvalue) const
+MMatrix MMatrix::operator-(const MMatrix& rhs) const
 {
-	if(_rows != rvalue.rows() || _cols != rvalue.cols())
-		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rvalue.rows(), _cols, rvalue.cols()));
+	if(_rows != rhs.rows() || _cols != rhs.cols())
+		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rhs.rows(), _cols, rhs.cols()));
 
 	MMatrix res(_rows, _cols);
-	MMATRIX_MAP_IJ(res, operator()(i,j) - rvalue(i,j));
+	MMATRIX_MAP_IJ(res, operator()(i,j) - rhs(i,j));
 
 	return res;
 }
@@ -142,4 +161,19 @@ MMatrix& MMatrix::operator/=(double rhs)
 	MMATRIX_MAP_IJ(*this, operator()(i,j) / rhs);
 
 	return *this;
+}
+
+void MMatrix::multiply_in_place(const MMatrix& rhs)
+{
+	if(_cols != rhs.rows() || rhs.rows() != rhs.cols())
+		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH_MULT_INPLACE(_rows, rhs.rows(), _cols, rhs.cols()));
+
+	MMatrix aux_row;
+	MMATRIX_WALK_IJ(*this,{
+		if(j == 0) aux_row = row(i);
+
+		operator()(i,j) = 0;
+		for (int k = 0; k < _cols; ++k)
+			operator()(i,j) += aux_row(k) * rhs(k,j);
+	});
 }
