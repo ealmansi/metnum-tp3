@@ -1,0 +1,110 @@
+==12725== Memcheck, a memory error detector
+==12725== Copyright (C) 2002-2011, and GNU GPL'd, by Julian Seward et al.
+==12725== Using Valgrind-3.7.0 and LibVEX; rerun with -h for copyright info
+==12725== Command: /home/emilio/Materias/Metnum/TPs/TP3/cpp/tp3-gen -i ../data/t10k-images.idx3-ubyte -l ../data/t10k-labels.idx1-ubyte -d 1:2 -e 10
+==12725== Parent PID: 1939
+==12725== 
+--12725-- 
+--12725-- Valgrind options:
+--12725--    --suppressions=/usr/lib/valgrind/debian-libc6-dbg.supp
+--12725--    -v
+--12725--    --tool=memcheck
+--12725--    --leak-check=full
+--12725--    --num-callers=40
+--12725--    --log-file=valgrind.log
+--12725-- Contents of /proc/version:
+--12725--   Linux version 3.5.0-34-generic (buildd@roseapple) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #55~precise1-Ubuntu SMP Fri Jun 7 16:25:50 UTC 2013
+--12725-- Arch and hwcaps: AMD64, amd64-sse3-cx16
+--12725-- Page sizes: currently 4096, max supported 4096
+--12725-- Valgrind library directory: /usr/lib/valgrind
+--12725-- Reading syms from /home/emilio/Materias/Metnum/TPs/TP3/cpp/tp3-gen (0x400000)
+--12725-- Reading syms from /lib/x86_64-linux-gnu/ld-2.15.so (0x4000000)
+--12725--   Considering /lib/x86_64-linux-gnu/ld-2.15.so ..
+--12725--   .. CRC mismatch (computed 269450ce wanted 94894502)
+--12725--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.15.so ..
+--12725--   .. CRC is valid
+--12725-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux (0x38000000)
+--12725--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--12725--   .. CRC mismatch (computed fd32bc40 wanted 1b1bde8c)
+--12725--    object doesn't have a symbol table
+--12725--    object doesn't have a dynamic symbol table
+--12725-- Reading suppressions file: /usr/lib/valgrind/debian-libc6-dbg.supp
+--12725-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==12725== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-12725-by-emilio-on-???
+==12725== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-12725-by-emilio-on-???
+==12725== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-12725-by-emilio-on-???
+==12725== 
+==12725== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==12725== don't want to do, unless you know exactly what you're doing,
+==12725== or are doing some strange experiment):
+==12725==   /usr/lib/valgrind/../../bin/vgdb --pid=12725 ...command...
+==12725== 
+==12725== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==12725==   /path/to/gdb /home/emilio/Materias/Metnum/TPs/TP3/cpp/tp3-gen
+==12725== and then give GDB the following command
+==12725==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=12725
+==12725== --pid is optional if only one valgrind process is running
+==12725== 
+--12725-- REDIR: 0x40189e0 (strlen) redirected to 0x380625c7 (???)
+--12725-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so (0x4a25000)
+--12725--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--12725--   .. CRC mismatch (computed 8f05ac98 wanted c6d0ab1a)
+--12725--    object doesn't have a symbol table
+--12725-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so (0x4c27000)
+--12725--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--12725--   .. CRC mismatch (computed fc059af4 wanted ffc668e8)
+--12725--    object doesn't have a symbol table
+--12725-- REDIR: 0x4018850 (index) redirected to 0x4c2bc60 (index)
+--12725-- REDIR: 0x40188d0 (strcmp) redirected to 0x4c2cc20 (strcmp)
+--12725-- Reading syms from /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16 (0x4e32000)
+--12725--   Considering /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.16 ..
+--12725--   .. CRC mismatch (computed ef748751 wanted e44c0328)
+--12725--    object doesn't have a symbol table
+--12725-- Reading syms from /lib/x86_64-linux-gnu/libm-2.15.so (0x5132000)
+--12725--   Considering /lib/x86_64-linux-gnu/libm-2.15.so ..
+--12725--   .. CRC mismatch (computed e81d4037 wanted fad28d48)
+--12725--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libm-2.15.so ..
+--12725--   .. CRC is valid
+--12725-- Reading syms from /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x542e000)
+--12725--   Considering /lib/x86_64-linux-gnu/libgcc_s.so.1 ..
+--12725--   .. CRC mismatch (computed c8e4b229 wanted 098e39f6)
+--12725--    object doesn't have a symbol table
+--12725-- Reading syms from /lib/x86_64-linux-gnu/libc-2.15.so (0x5644000)
+--12725--   Considering /lib/x86_64-linux-gnu/libc-2.15.so ..
+--12725--   .. CRC mismatch (computed d1cc6f49 wanted 7994f9f0)
+--12725--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.15.so ..
+--12725--   .. CRC is valid
+--12725-- REDIR: 0x56d0e40 (strcasecmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x56cd1e0 (strnlen) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x56d3110 (strncasecmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x56cebd0 (__GI_strrchr) redirected to 0x4c2ba80 (__GI_strrchr)
+--12725-- REDIR: 0x56cd100 (__GI_strlen) redirected to 0x4c2bfc0 (__GI_strlen)
+--12725-- REDIR: 0x56cb5c0 (strcmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x5775e20 (__strcmp_sse42) redirected to 0x4c2cb60 (strcmp)
+--12725-- REDIR: 0x56cd0b0 (strlen) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x57a6be0 (__strlen_sse2_pminub) redirected to 0x4c2bfa0 (strlen)
+--12725-- REDIR: 0x4ee7dd0 (operator new(unsigned long)) redirected to 0x4c2b160 (operator new(unsigned long))
+--12725-- REDIR: 0x56d57f0 (memcpy@@GLIBC_2.14) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x578bfa0 (__memcpy_ssse3_back) redirected to 0x4c2cf30 (memcpy@@GLIBC_2.14)
+--12725-- REDIR: 0x56cf600 (bcmp) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x57a1510 (__memcmp_sse4_1) redirected to 0x4c2dca0 (bcmp)
+--12725-- REDIR: 0x4ee6150 (operator delete(void*)) redirected to 0x4c2a450 (operator delete(void*))
+--12725-- REDIR: 0x56cf2b0 (memchr) redirected to 0x4c2cce0 (memchr)
+--12725-- REDIR: 0x56cfbd0 (memcpy@GLIBC_2.2.5) redirected to 0x4a25610 (_vgnU_ifunc_wrapper)
+--12725-- REDIR: 0x5791540 (__memmove_ssse3_back) redirected to 0x4c2cd20 (memcpy@GLIBC_2.2.5)
+--12725-- REDIR: 0x56c6f50 (malloc) redirected to 0x4c2b660 (malloc)
+--12725-- REDIR: 0x4ee7f00 (operator new[](unsigned long)) redirected to 0x4c2abc0 (operator new[](unsigned long))
+--12725-- REDIR: 0x4ee6190 (operator delete[](void*)) redirected to 0x4c2a030 (operator delete[](void*))
+--12725-- REDIR: 0x56c7560 (free) redirected to 0x4c2a7c0 (free)
+==12725== 
+==12725== HEAP SUMMARY:
+==12725==     in use at exit: 0 bytes in 0 blocks
+==12725==   total heap usage: 177 allocs, 177 frees, 125,600,185 bytes allocated
+==12725== 
+==12725== All heap blocks were freed -- no leaks are possible
+==12725== 
+==12725== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
+--12725-- 
+--12725-- used_suppression:      2 dl-hack3-cond-1
+==12725== 
+==12725== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)

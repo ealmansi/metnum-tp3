@@ -2,6 +2,8 @@
 #include <vector>
 using namespace std;
 
+#include "../lib/commons.h"
+
 #include "cmd-args.h"
 #include "mmatrix.h"
 #include "data-io.h"

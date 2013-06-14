@@ -3,7 +3,7 @@
 #include <fstream>
 using namespace std;
 
-#include "../lib/common_macros.h"
+#include "../lib/commons.h"
 
 #include "data-io.h"
 #include "mmatrix.h"
@@ -46,14 +46,16 @@ void load_ubyte_images(string filename, MMatrix& images)
 	if( number_of_rows != IMAGE_HEIGHT_PXS || number_of_cols != IMAGE_WIDTH_PXS )
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 
-	for (int i = 0; i < number_of_rows; ++i)
-		for (int j = 0; j < number_of_cols; ++j)
-		{
-			file.read(buffer, 1);
-			if(!file)
-				DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-			images(i,j) = ((double)BYTE_2_INT(buffer));
-		}
+	images.set_size(number_of_images, number_of_rows * number_of_cols);
+	for (int im = 0; im < number_of_images; ++im)
+		for (int i = 0; i < number_of_rows; ++i)
+			for (int j = 0; j < number_of_cols; ++j)
+			{
+				file.read(buffer, 1);
+				if(!file)
+					DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+				images(im, i * number_of_cols + j) = ((double)BYTE_2_INT(buffer));
+			}
 
 	file.close();
 }
