@@ -14,8 +14,10 @@ using namespace std;
 #define		IMAGE_HEIGHT_PXS	28
 #define		IMAGE_WIDTH_PXS		28
 
-#define		BYTE_2_INT(buff)		 	((int)(*(buff)))
+#define		BYTE_2_INT(buff)		 	((int)(0xFF & ((unsigned char)*(buff))))
 #define 	BYTE_ARRAY_2_INT(buff) 		((BYTE_2_INT(buff) << 24) + (BYTE_2_INT(buff+1) << 16) + (BYTE_2_INT(buff+2) << 8)  + (BYTE_2_INT(buff+3) << 0))
+
+#define	LIMIT	10
 
 void load_ubyte_images(string filename, MMatrix& images)
 {
@@ -31,7 +33,7 @@ void load_ubyte_images(string filename, MMatrix& images)
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_images = BYTE_ARRAY_2_INT(buffer);
+	int number_of_images = LIMIT; //BYTE_ARRAY_2_INT(buffer);
 	
 	file.read(buffer, 4);
 	if(!file)
@@ -48,13 +50,15 @@ void load_ubyte_images(string filename, MMatrix& images)
 
 	images.set_size(number_of_images, number_of_rows * number_of_cols);
 	for (int im = 0; im < number_of_images; ++im)
-		for (int i = 0; i < number_of_rows; ++i)
-			for (int j = 0; j < number_of_cols; ++j)
+		for (int j = 0; j < number_of_cols; ++j)
+			for (int i = 0; i < number_of_rows; ++i)
 			{
 				file.read(buffer, 1);
 				if(!file)
 					DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-				images(im, i * number_of_cols + j) = ((double)BYTE_2_INT(buffer));
+
+				int n = i * number_of_cols + j;
+				images(im, n) = ((double)BYTE_2_INT(buffer));
 			}
 
 	file.close();
@@ -74,13 +78,14 @@ void load_ubyte_labels(string filename, vector<int>& labels)
 	file.read(buffer, 4);
 	if(!file)
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_items = BYTE_ARRAY_2_INT(buffer);
+	int number_of_items = LIMIT;//BYTE_ARRAY_2_INT(buffer);
 
 	for (int i = 0; i < number_of_items; ++i)
 	{
 		file.read(buffer, 1);
 		if(!file)
 			DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+
 		labels.push_back(BYTE_2_INT(buffer));
 	}
 
