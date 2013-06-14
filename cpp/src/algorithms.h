@@ -13,6 +13,8 @@ MMatrix compute_covariance_matrix(MMatrix& mat);
 
 void eigen_decomposition(MMatrix& cov_mat, double delta, MMatrix& V, MMatrix& D);
 
+void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D);
+
 void QR_factorization_in_place(MMatrix& Q, MMatrix& A);
 
 void ensure_positive_diagonal(MMatrix& V, MMatrix& D);

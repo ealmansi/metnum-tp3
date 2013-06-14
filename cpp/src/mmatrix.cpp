@@ -167,6 +167,21 @@ MMatrix& MMatrix::operator/=(double rhs)
 	return *this;
 }
 
+MMatrix MMatrix::operator*(const MMatrix& rhs) const
+{
+	if(_cols != rhs.rows())
+		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rhs.rows(), _cols, rhs.cols()));
+
+	MMatrix res(_rows, rhs.cols());
+	MMATRIX_WALK_IJ(res,{
+		res(i,j) = 0;
+		for (int k = 0; k < _cols; ++k)
+			res(i,j) += operator()(i,k) * rhs(k, j);
+	});
+
+	return res;
+}
+
 void MMatrix::multiply_in_place(const MMatrix& rhs)
 {
 	if(_cols != rhs.rows() || rhs.rows() != rhs.cols())
@@ -199,7 +214,7 @@ ostream& operator<<(ostream &os, const MMatrix &mat)
 		{
 			if( 0 < i && j == 0 )
 				os << '\t';
-			os << setw(10) << mat(i,j);
+			os << setw(20) << mat(i,j);
 			if(j + 1 < mat.cols())
 				os << " ";
 		}

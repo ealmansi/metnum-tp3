@@ -1,5 +1,6 @@
 #include <cmath>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 using namespace std;
 
@@ -7,9 +8,9 @@ using namespace std;
 #include "algorithms.h"
 #include "mmatrix.h"
 
-#define		CONVERGENCE_NOT_ATTAINED(it, dlt)	("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "), dada una tolerancia delta = " + double2str(dlt))
+#define		CONVERGENCE_NOT_ATTAINED(it, err, dlt)	("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Se alcanzó un error de " + double2str(err) + ", ante una tolerancia de " + double2str(dlt))
 
-#define		MAX_ITERATIONS		10
+#define		MAX_ITERATIONS		10000
 
 //	//	gen	//	//
 
@@ -50,12 +51,12 @@ MMatrix identity_matrix(int n)
 	return res;
 }
 
-double compute_sum_ignoring_diagonal(MMatrix& mat)
+double compute_diagonalization_error(MMatrix& mat)
 {
 	double res = 0;
 	MMATRIX_WALK_IJ(mat,{
 		if(i == j) continue;
-		res += mat(i,j);
+		res += abs(mat(i,j));
 	});
 
 	return res;
@@ -96,43 +97,93 @@ void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 	V = identity_matrix(mat.rows());
 	MMatrix Q(mat.rows(), mat.rows());
 
+	double error = compute_diagonalization_error(D);
 	int iteration_count = 0;
-	while( iteration_count++ < MAX_ITERATIONS && delta < compute_sum_ignoring_diagonal(D) )
+	while( iteration_count < MAX_ITERATIONS && delta < error )
 	{
 		QR_factorization_in_place(Q,D);
 		D.multiply_in_place(Q);
 		V.multiply_in_place(Q);
+
+		error = compute_diagonalization_error(D);
+		iteration_count++;
 	}
 
 	if( iteration_count == MAX_ITERATIONS )
-		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED(iteration_count, delta));
+		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED(iteration_count, error, delta));
 }
 
-void ensure_positive_diagonal(MMatrix& V, MMatrix& D)
-{
+// void ensure_positive_diagonal(MMatrix& V, MMatrix& D)
+// {
+// 	for (int i = 0; i < D.cols(); ++i)
+// 	{
+// 		if( D(i,i) < 0 )
+// 		{
+// 			D(i,i) = -D(i,i);
+// 			for (int k = 0; k < V.rows(); ++k)
+// 			{
+// 				V(k,i) = -V(k,i);
+// 			}
+// 		}
+// 	}
+// }
 
-}
+// bool compare_index_eigenvalue_pair(const pair<int,double>& a, const pair<int,double>& b)
+// {
+// 	return (a.second > b.second);
+// }
 
-void sort_eigenvectors(MMatrix& V, MMatrix& D)
-{
+// void sort_eigenvectors(MMatrix& V, MMatrix& D)
+// {
+// 	vector<pair<int,double> > index_eigenvalue_pairs;
+// 	for (int i = 0; i < D.cols(); ++i)
+// 		index_eigenvalue_pairs.push_back(pair<int,double>(i, D(i,i)));
 
-}
+// 	sort(index_eigenvalue_pairs.begin(), index_eigenvalue_pairs.end(), compare_index_eigenvalue_pair);
+
+// 	MMatrix sorted_V(V.rows(), V.cols());
+// 	vector<pair<int,double> >::const_iterator in_ev;
+// 	for (in_ev = index_eigenvalue_pairs.begin(); in_ev != index_eigenvalue_pairs.end(); ++in_ev)
+// 	{
+// 		int j = in_ev->first;
+// 		for (int i = 0; i < V.rows(); ++i)
+// 			sorted_V(i,j) = V(i,j);
+// 	}
+
+// 	V = sorted_V;
+// }
 
 void eigen_decomposition(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 {
 	QR_algorithm(mat, delta, V, D);
-	ensure_positive_diagonal(V, D);
-	sort_eigenvectors(V, D);
+	
+	/*Por alguna razón que desconozco, QR_algorithm ya los deja ordenados y positivos
+	* si la matriz es simétrica y semidefinida positiva (como una matriz de covarianza).
+	*/
+	// ensure_positive_diagonal(V, D);
+	// sort_eigenvectors(V, D);
 }
 
 MMatrix transform_images(MMatrix& images, MMatrix& V)
 {
-
+	return images * V;
 }
+
+#define		NUM_DIGITS		10
 
 MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels)
 {
+	int digits_count[NUM_DIGITS] = {0};
+	MMatrix avgs(NUM_DIGITS, transf_images.cols(), 0.0);
 
+	MMATRIX_WALK_IJ(transf_images,{
+		avgs(labels.at(i), j) += transf_images(i,j);
+		digits_count[labels.at(i)]++;
+	});
+
+	MMATRIX_WALK_IJ(avgs, avgs(i,j) / digits_count[i]);
+
+	return avgs;
 }
 
 MMatrix compute_mean_row(MMatrix& mat)

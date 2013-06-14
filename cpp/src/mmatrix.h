@@ -27,6 +27,7 @@ public:
 
 	MMatrix operator-(const MMatrix& rhs) const;
 	MMatrix& operator/=(double rhs);
+	MMatrix operator*(const MMatrix& rhs) const;
 	void multiply_in_place(const MMatrix& rhs);
 
 	MMatrix t() const;		// transposition
