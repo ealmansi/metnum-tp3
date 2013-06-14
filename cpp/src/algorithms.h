@@ -7,7 +7,7 @@
 
 //	//	gen	//	//
 
-MMatrix normalize(MMatrix& mat);
+MMatrix& normalize_in_place(MMatrix& mat);
 
 MMatrix compute_covariance_matrix(MMatrix& mat);
 

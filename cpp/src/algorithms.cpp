@@ -16,28 +16,24 @@ using namespace std;
 
 MMatrix compute_mean_row(MMatrix& mat);
 
-MMatrix normalize(MMatrix& mat)
+MMatrix& normalize_in_place(MMatrix& mat)
 {
 	MMatrix mean_row = compute_mean_row(mat);
-	
-	MMatrix normalized(mat.rows(), mat.cols());
-	MMATRIX_MAP_IJ(normalized, mat(i,j) - mean_row(j));
 
-	return normalized;
+	MMATRIX_MAP_IJ(mat, mat(i,j) - mean_row(j));
+
+	return mat;
 }
 
 MMatrix compute_covariance_matrix(MMatrix& mat)
 {
-	MMatrix cov_mat(mat.cols(), mat.cols());
-	MMATRIX_WALK_IJ(cov_mat,{
-		if( i < j ) break;
-		cov_mat(i,j) = 0;
-		for (int k = 0; k < mat.rows(); ++k)
-			cov_mat(i,j) += mat(k,i) * mat(k,j);
-		cov_mat(j,i) = cov_mat(i,j);
-	});
+	MMatrix& normalized = normalize_in_place(mat);
 
-	cov_mat /= (mat.rows() - 1);
+	MMatrix normalized_t = normalized.t();
+
+	MMatrix cov_mat = normalized_t * normalized;
+
+	cov_mat /= (normalized.rows() - 1);
 
 	return cov_mat;
 }
@@ -102,8 +98,8 @@ void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 	while( iteration_count < MAX_ITERATIONS && delta < error )
 	{
 		QR_factorization_in_place(Q,D);
-		D.multiply_in_place(Q);
-		V.multiply_in_place(Q);
+		D *= Q;
+		V *= Q;
 
 		error = compute_diagonalization_error(D);
 		iteration_count++;

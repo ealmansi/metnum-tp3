@@ -28,9 +28,12 @@ public:
 	MMatrix operator-(const MMatrix& rhs) const;
 	MMatrix& operator/=(double rhs);
 	MMatrix operator*(const MMatrix& rhs) const;
-	void multiply_in_place(const MMatrix& rhs);
+	MMatrix& operator*=(const MMatrix& rhs);
 
 	MMatrix t() const;		// transposition
+
+	static double dot_row_col(const MMatrix &lhs, int i, const MMatrix &rhs, int j);
+	static double dot_col_col(const MMatrix &lhs, int j1, const MMatrix &rhs, int j2);
 
 private:
 	void initialize();
@@ -42,6 +45,26 @@ private:
 };
 
 ostream& operator<<(ostream &os, const MMatrix &mat);
+
+/* No dimension check */
+inline double MMatrix::dot_row_col(const MMatrix &lhs, int i, const MMatrix &rhs, int j)
+{
+	double res = 0;
+	for (int k = 0; k < lhs.cols(); ++k)
+		res += lhs(i,k) * rhs(k,j);
+
+	return res;
+}
+
+/* No dimension check */
+inline double MMatrix::dot_col_col(const MMatrix &lhs, int j1, const MMatrix &rhs, int j2)
+{
+	double res = 0;
+	for (int k = 0; k < lhs.rows(); ++k)
+		res += lhs(k,j1) * rhs(k,j2);
+
+	return res;
+}
 
 #define		MMATRIX_WALK_IJ(mat, code)						\
 {															\

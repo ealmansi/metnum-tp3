@@ -6,14 +6,15 @@ using namespace std;
 #include "../lib/commons.h"
 #include "mmatrix.h"
 #include "algorithms.h"
+#include "data-io.h"
 
 int main(int argc, char** argv)
 {
 	srand(time(0));
 
-	MMatrix mat1(10,7);
-	MMATRIX_MAP_IJ(mat1, rand()%10);
-	PRINT_EXPR(mat1);
+	// MMatrix mat1(10,7);
+	// MMATRIX_MAP_IJ(mat1, rand()%10);
+	// PRINT_EXPR(mat1);
 
 	// MMatrix mat2(3,3);
 	// MMATRIX_MAP_IJ(mat2, rand()%10);
@@ -35,17 +36,27 @@ int main(int argc, char** argv)
 	// PRINT_EXPR(Q);
 	// PRINT_EXPR(mat3);
 
-	
-	MMatrix cov_mat = compute_covariance_matrix(mat1);
-	PRINT_EXPR(cov_mat);
+	MMatrix imgs;
+	load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
 
-	MMatrix V, D;
-	eigen_decomposition(cov_mat, 1e-5, V, D);
-	PRINT_EXPR(V);
-	PRINT_EXPR(D);
+	MMatrix& imgs_n = normalize_in_place(imgs);
 
-	MMatrix V_t = V.t();
-	PRINT_EXPR(V*D*V_t - cov_mat);
+	MMatrix imgs_n_t = imgs_n.t();
+
+	MMatrix prod = imgs_n_t * imgs_n;
+
+	/*	en matlab:
+		>> salida
+		>> norm(res - lhs*rhs)
+	*/
+
+	// MMatrix V, D;
+	// eigen_decomposition(cov_mat, 1e-5, V, D);
+	// PRINT_EXPR(V);
+	// PRINT_EXPR(D);
+
+	// MMatrix V_t = V.t();
+	// PRINT_EXPR(V*D*V_t - cov_mat);
 
 	return 0;
 }

@@ -173,16 +173,24 @@ MMatrix MMatrix::operator*(const MMatrix& rhs) const
 		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rhs.rows(), _cols, rhs.cols()));
 
 	MMatrix res(_rows, rhs.cols());
-	MMATRIX_WALK_IJ(res,{
-		res(i,j) = 0;
-		for (int k = 0; k < _cols; ++k)
-			res(i,j) += operator()(i,k) * rhs(k, j);
-	});
+	for (int i = 0; i < res.rows(); ++i)
+		for (int j = 0; j < res.cols(); ++j)
+		{
+			double a_ij = 0;
+			for (int k = 0; k < rhs.rows(); ++k)
+				a_ij += (operator()(i,k)) * (rhs(k,j));
+			res(i,j) = a_ij;
+		}
+
+	const MMatrix& lhs = *this;
+	PRINT_EXPR(lhs);
+	PRINT_EXPR(rhs);
+	PRINT_EXPR(res);
 
 	return res;
 }
 
-void MMatrix::multiply_in_place(const MMatrix& rhs)
+MMatrix& MMatrix::operator*=(const MMatrix& rhs)
 {
 	if(_cols != rhs.rows() || rhs.rows() != rhs.cols())
 		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH_MULT_INPLACE(_rows, rhs.rows(), _cols, rhs.cols()));
@@ -190,11 +198,10 @@ void MMatrix::multiply_in_place(const MMatrix& rhs)
 	MMatrix aux_row;
 	MMATRIX_WALK_IJ(*this,{
 		if(j == 0) aux_row = row(i);
-
-		operator()(i,j) = 0;
-		for (int k = 0; k < _cols; ++k)
-			operator()(i,j) += aux_row(k) * rhs(k,j);
+		operator()(i,j) = dot_row_col(aux_row, 0, rhs, j);
 	});
+
+	return *this;
 }
 
 MMatrix MMatrix::t() const
