@@ -9,8 +9,13 @@ if( hacer_cuentas )
 
 	% defino conjuntos de entrenamiento y de prueba
 	total_imgs = size(imgg,3);
-	train_set = 1:total_imgs; train_set_size = size(train_set,2);
-	test_set = 1:total_imgs; test_set_size = size(test_set,2);
+	total_imgs = 400
+    
+    train_set = 1:total_imgs; 
+    train_set_size = size(train_set,2);
+	
+    test_set = 1:total_imgs; 
+    test_set_size = size(test_set,2);
 
 	% obtengo los conjuntos y transformo las imagenes a filas
 	train_imgs = images_2_rows(double(imgg(:,:,train_set)));
@@ -23,11 +28,18 @@ if( hacer_cuentas )
 	% genero la matriz X
 	avg_im = mean(train_imgs,1);
 	X = train_imgs - ones(train_set_size,1) * avg_im;
-	X = X / sqrt(train_set_size - 1);
+	X1 = X / sqrt(train_set_size - 1);
 
+    X_prod_Xt_OK = X1'*X1;
+    norm(PROD- prod)
+    
+    
 	% obtengo la matriz de transformación V transpuesta
 	[V, D] = eig(X'*X);
 	[V, D] = sortem(V, D);
+        
+    norm(X - lhs*rhs)
+    
 	clear X;
 	clear D;
 

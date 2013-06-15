@@ -64,11 +64,10 @@ int main(int argc, char** argv) {
 
 	PRINT_EXPR(X_prod_Xt)
 
-
-	MMatrix V, D;
-	eigen_decomposition(cov_mat, 1e-5, V, D);
-	PRINT_EXPR(V);
-	PRINT_EXPR(D);
+	//MMatrix V, D;
+	//eigen_decomposition(cov_mat, 1e-5, V, D);
+	//PRINT_EXPR(V);
+	//PRINT_EXPR(D);
 
 	// MMatrix V_t = V.t();
 	// PRINT_EXPR(V*D*V_t - cov_mat);

@@ -30,7 +30,10 @@ public:
 	MMatrix operator*(const MMatrix& rhs) const;
 	MMatrix& operator*=(const MMatrix& rhs);
 
-	MMatrix t() const;		// transposition
+	MMatrix t() const;					// transposition
+	MMatrix& t_in_place();				// (only squared matrices)
+
+	static MMatrix& make_identity_matrix(MMatrix& mat, int size);
 
 	static double dot_row_col(const MMatrix &lhs, int i, const MMatrix &rhs, int j);
 	static double dot_col_col(const MMatrix &lhs, int j1, const MMatrix &rhs, int j2);
