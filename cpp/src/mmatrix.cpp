@@ -184,19 +184,7 @@ MMatrix MMatrix::operator*(const MMatrix& rhs) const
 		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rhs.rows(), _cols, rhs.cols()));
 
 	MMatrix res(_rows, rhs.cols());
-	for (int i = 0; i < res.rows(); ++i)
-		for (int j = 0; j < res.cols(); ++j)
-		{
-			double a_ij = 0;
-			for (int k = 0; k < rhs.rows(); ++k)
-				a_ij += (operator()(i,k)) * (rhs(k,j));
-			res(i,j) = a_ij;
-		}
-
-	const MMatrix& lhs = *this;
-	PRINT_EXPR(lhs);
-	PRINT_EXPR(rhs);
-	PRINT_EXPR(res);
+	MMATRIX_MAP_IJ(res, dot_row_col(*this, i, rhs, j));
 
 	return res;
 }
@@ -225,7 +213,6 @@ MMatrix MMatrix::t() const
 
 MMatrix& MMatrix::t_in_place()
 {
-	PRINT_MSG("as");
 	if(_rows != _cols)
 		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH_TRANSP_INPLACE(_rows,_cols));
 
@@ -241,7 +228,7 @@ MMatrix& MMatrix::make_identity_matrix(MMatrix& mat, int size)
 {
 	if(mat.rows() != size || mat.cols() != size)
 		mat.set_size(size, size);
-	
+
 	MMATRIX_MAP_IJ(mat, (i == j)?(1):(0));
 
 	return mat;

@@ -27,13 +27,16 @@ MMatrix& normalize_in_place(MMatrix& mat)
 
 MMatrix compute_covariance_matrix(MMatrix& mat)
 {
-	MMatrix& normalized = normalize_in_place(mat);
+	normalize_in_place(mat);
 
-	MMatrix normalized_t = normalized.t();
+	MMatrix cov_mat(mat.cols(),mat.cols());
 
-	MMatrix cov_mat = normalized_t * normalized;
+	MMATRIX_WALK_IJ(cov_mat,{
+		if(i < j) break;
+		cov_mat(i,j) = cov_mat(j,i) = MMatrix::dot_col_col(mat, i, mat, j);
+	});
 
-	cov_mat /= (normalized.rows() - 1);
+	cov_mat /= (mat.rows() - 1);
 
 	return cov_mat;
 }
