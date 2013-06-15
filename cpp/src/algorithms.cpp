@@ -84,8 +84,10 @@ void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 	Q.t_in_place();
 }
 
-void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
+void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbose)
 {
+	PRINT_ON_VERBOSE("Comenzando algoritmo QR.", verbose);
+
 	D = mat;
 	V.make_identity_matrix(mat.rows());
 	MMatrix Q(mat.rows(), mat.rows());
@@ -94,7 +96,12 @@ void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 	int iteration_count = 0;
 	while( iteration_count < MAX_ITERATIONS && delta < error )
 	{
+		PRINT_ON_VERBOSE("Número de iteración: " + int2str(iteration_count) + ", error: " + double2str(error), verbose);
+
 		QR_factorization_in_place(Q,D);
+
+		PRINT_ON_VERBOSE("Descomposición QR computada.", verbose);
+
 		D *= Q;
 		V *= Q;
 
@@ -146,9 +153,9 @@ void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 // 	V = sorted_V;
 // }
 
-void eigen_decomposition(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
+void eigen_decomposition(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbose)
 {
-	QR_algorithm(mat, delta, V, D);
+	QR_algorithm(mat, delta, V, D, verbose);
 	
 	/*Por alguna razón que desconozco, QR_algorithm ya los deja ordenados y positivos
 	* si la matriz es simétrica y semidefinida positiva (como una matriz de covarianza).

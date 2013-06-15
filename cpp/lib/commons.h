@@ -19,6 +19,9 @@
 		std::exit(-1);																						\
 	}
 
+#define		PRINT_ON_VERBOSE(msg, verbose)		\
+	{ if( (verbose) ) PRINT_MSG(string("% ").append((msg))); }
+
 #define		DBL_TOLERANCE_2_ZERO		1e-8
 
 inline std::string int2str(int n)

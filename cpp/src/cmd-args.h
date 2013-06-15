@@ -11,6 +11,7 @@ struct CmdArgsGen
 	string images_filename;
 	string labels_filename;
 	vector<double> delta_values;
+	bool verbose;
 };
 
 CmdArgsGen parse_cmd_args_gen(int argc, char** argv);
@@ -22,6 +23,7 @@ struct CmdArgsClassif
 	string output_filename;
 	vector<string> data_files;
 	vector<int> k_values;
+	bool verbose;
 };
 
 CmdArgsClassif parse_cmd_args_classif(int argc, char** argv);

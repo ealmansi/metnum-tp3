@@ -17,6 +17,10 @@ CmdArgsGen parse_cmd_args_gen(int argc, char** argv)
 	// Define the command line object.
 	CmdLine cmd("Programa generador de los datos requeridos para la clasificación.", ' ', "0.1");
 
+	// Define a switch and add it to the command line.
+	SwitchArg verboseSwitch("v","verbose","Imprimir mensajes indicando el estado del programa durante la ejecución.", false);
+	cmd.add( verboseSwitch );
+
 	// Define a value argument and add it to the command line.
 	ValueArg<int> deltaExpArg("e","deltaexp","Orden de magnitud de los valores del parámetro de la condición de parada para el algoritmo QR (ver argumento \"deltas\").",true,-1,"int");
 	cmd.add( deltaExpArg );
@@ -46,6 +50,7 @@ CmdArgsGen parse_cmd_args_gen(int argc, char** argv)
 		CmdLineParseException e("Formato incorrecto o resultado vacío.", "deltas");
 		cmd.getOutput()->failure(cmd,e); exit(1);
 	}
+	args.verbose = verboseSwitch.getValue();
 	
 	return args;
 }
@@ -54,6 +59,10 @@ CmdArgsClassif parse_cmd_args_classif(int argc, char** argv)
 {
 	// Define the command line object.
 	CmdLine cmd("Programa clasificador.", ' ', "0.1");
+
+	// Define a switch and add it to the command line.
+	SwitchArg verboseSwitch("v","verbose","Imprimir mensajes indicando el estado del programa durante la ejecución.", false);
+	cmd.add( verboseSwitch );
 
 	// Define a value argument and add it to the command line.
 	UnlabeledMultiArg<string> dataFilesArg("datos", "Archivos de datos generados con el programa tp3-gen, conteniendo la información necesaria para realizar la clasificación utilizando distintas precisiones en el cálculo de autovectores.", true, "archivo");
@@ -90,6 +99,7 @@ CmdArgsClassif parse_cmd_args_classif(int argc, char** argv)
 		cmd.getOutput()->failure(cmd,e); exit(1);
 	}
 	args.data_files = dataFilesArg.getValue();
+	args.verbose = verboseSwitch.getValue();
 	
 	return args;
 }

@@ -12,16 +12,16 @@ using namespace std;
 int main(int argc, char** argv) {
 	srand(time(0));
 
-	MMatrix mat1(10, 10);
-	MMATRIX_MAP_IJ(mat1, rand()%10);
-	PRINT_EXPR(mat1);
+	// MMatrix mat1(10, 10);
+	// MMATRIX_MAP_IJ(mat1, rand()%10);
+	// PRINT_EXPR(mat1);
 
-	MMatrix mat2(10, 10);
-	MMATRIX_MAP_IJ(mat2, rand()%10);
-	PRINT_EXPR(mat2);
+	// MMatrix mat2(10, 10);
+	// MMATRIX_MAP_IJ(mat2, rand()%10);
+	// PRINT_EXPR(mat2);
 
-	MMatrix mat3 = mat1 * mat2;
-	PRINT_EXPR(mat3);
+	// MMatrix mat3 = mat1 * mat2;
+	// PRINT_EXPR(mat3);
 
 	// MMatrix mat1(10,7);
 	// MMATRIX_MAP_IJ(mat1, rand()%10);
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
 	MMatrix imgs;
 
-	load_ubyte_images("../data/train-images-idx3-ubyte", imgs);
+	load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
 
 	MMatrix& imgs_n = normalize_in_place(imgs);
 

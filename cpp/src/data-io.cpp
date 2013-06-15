@@ -8,8 +8,9 @@ using namespace std;
 #include "data-io.h"
 #include "mmatrix.h"
 
-#define		INVALID_FILE_FORMAT(fn)					( "El archivo \"" + fn + "\" no cumple con el formato IDX. Ver http://yann.lecun.com/exdb/mnist/" )
-#define		IMAGES_LABELS_INCONSISTENCY(igs,lbs)	( "Los archivos \"" + igs + "\" y \"" + lbs + "\" no contienen la misma cantidad de elementos" )
+#define		INVALID_FILE_FORMAT(fn)					("El archivo \"" + fn + "\" no cumple con el formato IDX. Ver http://yann.lecun.com/exdb/mnist/" )
+#define		IMAGES_LABELS_INCONSISTENCY(igs,lbs)	("Los archivos \"" + igs + "\" y \"" + lbs + "\" no contienen la misma cantidad de elementos" )
+#define		FILE_NOT_FOUND(filename)				("El archivo \"" + filename + "\" no existe o se encuentra inutilizable")
 
 #define		IMAGE_HEIGHT_PXS	28
 #define		IMAGE_WIDTH_PXS		28
@@ -21,7 +22,10 @@ using namespace std;
 
 void load_ubyte_images(string filename, MMatrix& images)
 {
+
 	ifstream file (filename.c_str(), ios::in | ios::binary);
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_FOUND(filename));
 
 	char buffer[4];
 
@@ -67,7 +71,9 @@ void load_ubyte_images(string filename, MMatrix& images)
 void load_ubyte_labels(string filename, vector<int>& labels)
 {
 	ifstream file (filename.c_str(), ios::in | ios::binary);
-
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_FOUND(filename));
+	
 	char buffer[4];
 
 	file.read(buffer, 4);
