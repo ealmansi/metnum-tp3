@@ -12,8 +12,6 @@ using namespace std;
 
 #define		MAX_ITERATIONS		10000
 
-#define		DBL_TOLERANCE_2_ZERO		1e-8
-
 //	//	gen	//	//
 
 MMatrix compute_mean_row(MMatrix& mat);
@@ -40,15 +38,6 @@ MMatrix compute_covariance_matrix(MMatrix& mat)
 	return cov_mat;
 }
 
-MMatrix identity_matrix(int n)
-{
-	MMatrix res(n,n, 0.0);
-	for (int i = 0; i < n; ++i)
-		res(i,i) = 1;
-
-	return res;
-}
-
 double compute_diagonalization_error(MMatrix& mat)
 {
 	double res = 0;
@@ -62,7 +51,7 @@ double compute_diagonalization_error(MMatrix& mat)
 
 void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 {
-	Q = identity_matrix(A.rows());
+	MMatrix::make_identity_matrix(Q, A.rows());
 	for (int i = 0; i < A.cols(); ++i)
 		for (int j = i+1; j < A.rows(); ++j)
 		{
@@ -88,13 +77,13 @@ void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 			}
 		}
 
-	Q = Q.t();
+	Q.t_in_place();
 }
 
 void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 {
 	D = mat;
-	V = identity_matrix(mat.rows());
+	MMatrix::make_identity_matrix(V, mat.rows());
 	MMatrix Q(mat.rows(), mat.rows());
 
 	double error = compute_diagonalization_error(D);

@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 using namespace std;
@@ -16,6 +17,10 @@ using namespace std;
 				("Las dimensiones no concuerdan; el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")
 #define		DIMENSIONS_MISMATCH_MULT_INPLACE(r1,r2,c1,c2)	\
 				("Las dimensiones no concuerdan para la multiplicación in situ (el producto debe estar definido y la matriz derecha debe ser cuadrada); el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")
+#define		NEAR_ZERO_DIVISION(denom)				\
+				("Divisón por un valor cercano a cero: " + double2str(denom))
+#define		DIMENSIONS_MISMATCH_TRANSP_INPLACE(rows,cols)	\
+				("No se puede trasponer in situ porque la matriz no es cuadrada; filas: " + int2str(rows) + ", columnas: " + int2str(cols))
 
 #define		IN_RANGE(a,x,b)				(((a) <= (x)) && ((x) < (b)))
 #define		NOT_IN_RANGE(a,x,b)			(!IN_RANGE((a),(x),(b)))
@@ -130,6 +135,9 @@ double& MMatrix::operator()(int n)
 
 double MMatrix::operator()(int n) const
 {
+	if(NOT_IN_RANGE(0, n, _rows * _cols))
+		DISPLAY_ERROR_AND_EXIT(OUT_OF_BOUNDS_LINEAR(n));
+
 	return _data[n];
 }
 
@@ -162,6 +170,9 @@ MMatrix MMatrix::operator-(const MMatrix& rhs) const
 
 MMatrix& MMatrix::operator/=(double rhs)
 {
+	if( abs(rhs) < DBL_TOLERANCE_2_ZERO )
+		DISPLAY_ERROR_AND_EXIT(NEAR_ZERO_DIVISION(rhs));
+
 	MMATRIX_MAP_IJ(*this, operator()(i,j) / rhs);
 
 	return *this;
@@ -210,6 +221,30 @@ MMatrix MMatrix::t() const
 	MMATRIX_MAP_IJ(res, operator()(j,i));
 
 	return res;
+}
+
+MMatrix& MMatrix::t_in_place()
+{
+	PRINT_MSG("as");
+	if(_rows != _cols)
+		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH_TRANSP_INPLACE(_rows,_cols));
+
+	MMATRIX_WALK_IJ(*this,{
+		if(i <= j) break;
+		swap(operator()(i,j), operator()(j,i));
+	});
+
+	return *this;
+}
+
+MMatrix& MMatrix::make_identity_matrix(MMatrix& mat, int size)
+{
+	if(mat.rows() != size || mat.cols() != size)
+		mat.set_size(size, size);
+	
+	MMATRIX_MAP_IJ(mat, (i == j)?(1):(0));
+
+	return mat;
 }
 
 ostream& operator<<(ostream &os, const MMatrix &mat)

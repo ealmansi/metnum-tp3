@@ -18,6 +18,8 @@
 		std::exit(-1);																						\
 	}
 
+#define		DBL_TOLERANCE_2_ZERO		1e-8
+
 inline std::string int2str(int n)
 {
 	std::stringstream ss;
@@ -30,6 +32,13 @@ inline std::string double2str(double f)
 	std::stringstream ss;
 	ss << f;
 	return ss.str();
+}
+
+inline double swap(double& a, double& b)
+{
+	double temp = a;
+	a = b;
+	b = temp;
 }
 
 #endif	// __COMMON_MACROS_H__
