@@ -17,7 +17,7 @@ using namespace std;
 #define		BYTE_2_INT(buff)		 	((int)(0xFF & ((unsigned char)*(buff))))
 #define 	BYTE_ARRAY_2_INT(buff) 		((BYTE_2_INT(buff) << 24) + (BYTE_2_INT(buff+1) << 16) + (BYTE_2_INT(buff+2) << 8)  + (BYTE_2_INT(buff+3) << 0))
 
-#define	LIMIT	10
+#define  	LIMIT	400
 
 void load_ubyte_images(string filename, MMatrix& images)
 {

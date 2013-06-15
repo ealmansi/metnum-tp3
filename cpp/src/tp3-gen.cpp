@@ -31,21 +31,21 @@ int main(int argc, char** argv)
 	
 	MMatrix cov_mat = compute_covariance_matrix(images);
 
-	// vector<double>::const_iterator delta;
-	// for (delta = args.delta_values.begin(); delta != args.delta_values.end(); ++delta)
-	// {
-	// 	MMatrix V, D;
-	// 	eigen_decomposition(cov_mat, *delta, V, D);
+	vector<double>::const_iterator delta;
+	for (delta = args.delta_values.begin(); delta != args.delta_values.end(); ++delta)
+	{
+	 	MMatrix V, D;
+		eigen_decomposition(cov_mat, *delta, V, D);
 
-	// 	PRINT_EXPR(V);
-	// 	PRINT_EXPR(D);
+	 	PRINT_EXPR(V);
+	 	PRINT_EXPR(D);
 
-	// 	MMatrix transf_images = transform_images(images, V);
+	 	MMatrix transf_images = transform_images(images, V);
 		
-	// 	MMatrix avgs = compute_average_by_digit(transf_images, labels);
+	 	MMatrix avgs = compute_average_by_digit(transf_images, labels);
 
-	// 	write_data_file(*delta, V, avgs);
-	// }
+	 	write_data_file(*delta, V, avgs);
+	}
 
 	return 0;
 }

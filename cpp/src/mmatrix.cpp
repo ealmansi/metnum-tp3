@@ -184,6 +184,7 @@ MMatrix MMatrix::operator*(const MMatrix& rhs) const
 		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rhs.rows(), _cols, rhs.cols()));
 
 	MMatrix res(_rows, rhs.cols());
+
 	MMATRIX_MAP_IJ(res, dot_row_col(*this, i, rhs, j));
 
 	return res;
