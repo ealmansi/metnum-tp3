@@ -11,6 +11,7 @@ using namespace std;
 #define		CONVERGENCE_NOT_ATTAINED(it, err, dlt)	("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Se alcanzó un error de " + double2str(err) + ", ante una tolerancia de " + double2str(dlt))
 
 #define		MAX_ITERATIONS		10000
+#define		NUM_DIGITS			10
 
 //	//	gen	//	//
 
@@ -54,7 +55,7 @@ double compute_diagonalization_error(MMatrix& mat)
 
 void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 {
-	MMatrix::make_identity_matrix(Q, A.rows());
+	Q.make_identity_matrix(A.rows());
 	for (int i = 0; i < A.cols(); ++i)
 		for (int j = i+1; j < A.rows(); ++j)
 		{
@@ -86,7 +87,7 @@ void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D)
 {
 	D = mat;
-	MMatrix::make_identity_matrix(V, mat.rows());
+	V.make_identity_matrix(mat.rows());
 	MMatrix Q(mat.rows(), mat.rows());
 
 	double error = compute_diagonalization_error(D);
@@ -160,8 +161,6 @@ MMatrix transform_images(MMatrix& images, MMatrix& V)
 {
 	return images * V;
 }
-
-#define		NUM_DIGITS		10
 
 MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels)
 {

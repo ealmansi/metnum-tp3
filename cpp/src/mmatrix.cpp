@@ -224,14 +224,14 @@ MMatrix& MMatrix::t_in_place()
 	return *this;
 }
 
-MMatrix& MMatrix::make_identity_matrix(MMatrix& mat, int size)
+MMatrix& MMatrix::make_identity_matrix(int size)
 {
-	if(mat.rows() != size || mat.cols() != size)
-		mat.set_size(size, size);
+	if(_rows != size || _cols != size)
+		set_size(size, size);
 
-	MMATRIX_MAP_IJ(mat, (i == j)?(1):(0));
+	MMATRIX_MAP_IJ(*this, (i == j)?(1):(0));
 
-	return mat;
+	return *this;
 }
 
 ostream& operator<<(ostream &os, const MMatrix &mat)
