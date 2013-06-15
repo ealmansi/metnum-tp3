@@ -84,34 +84,29 @@ void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 	Q.t_in_place();
 }
 
-void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbose)
+void QR_algorithm_in_place(MMatrix& A, MMatrix& V, double delta, int& iteration_count, bool verbose)
 {
-	PRINT_ON_VERBOSE("Comenzando algoritmo QR.", verbose);
+	MMatrix Q;
 
-	D = mat;
-	V.make_identity_matrix(mat.rows());
-	MMatrix Q(mat.rows(), mat.rows());
-
-	double error = compute_diagonalization_error(D);
-	int iteration_count = 0;
+	double error = compute_diagonalization_error(A);
 	while( iteration_count < MAX_ITERATIONS && delta < error )
 	{
 		PRINT_ON_VERBOSE("Número de iteración: " + int2str(iteration_count) + ", error: " + double2str(error), verbose);
 
-		QR_factorization_in_place(Q,D);
+		QR_factorization_in_place(Q,A);
 
 		PRINT_ON_VERBOSE("Descomposición QR computada.", verbose);
 
-		// D *= Q;
+		// A *= Q;
 		// V *= Q;
-		/* Multiplicación in situ y simultánea para D y V, a ver si acelera un poco... */
-		int size = mat.rows();
-		double aux_row_d[size], aux_row_v[size], aux_row_q[size];
+		/* Multiplicación in situ y simultánea para A y V, a ver si acelera un poco... */
+		int size = A.rows();
+		double aux_row_a[size], aux_row_v[size], aux_row_q[size];
 		for (int i = 0; i < size; ++i)
 		{
 			for (int j = 0; j < size; ++j)
 			{
-				aux_row_d[j] = D.e(i,j);
+				aux_row_a[j] = A.e(i,j);
 				aux_row_v[j] = V.e(i,j);
 			}
 
@@ -120,74 +115,23 @@ void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbo
 				for (int k = 0; k < size; ++k)
 					aux_row_q[k] = Q.e(k,j);
 
-				double a_ij_d = 0, a_ij_v = 0;
+				double a_ij_a = 0, a_ij_v = 0;
 				for (int k = 0; k < size; ++k)
 				{
-					a_ij_d += aux_row_d[k] * aux_row_q[k];
+					a_ij_a += aux_row_a[k] * aux_row_q[k];
 					a_ij_v += aux_row_v[k] * aux_row_q[k];
 				}
-				D.e(i,j) = a_ij_d;
+				A.e(i,j) = a_ij_a;
 				V.e(i,j) = a_ij_v;
 			}
 		}
 
-		error = compute_diagonalization_error(D);
+		error = compute_diagonalization_error(A);
 		iteration_count++;
 	}
 
 	if( iteration_count == MAX_ITERATIONS )
 		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED(iteration_count, error, delta));
-}
-
-// void ensure_positive_diagonal(MMatrix& V, MMatrix& D)
-// {
-// 	for (int i = 0; i < D.cols(); ++i)
-// 	{
-// 		if( D(i,i) < 0 )
-// 		{
-// 			D(i,i) = -D(i,i);
-// 			for (int k = 0; k < V.rows(); ++k)
-// 			{
-// 				V(k,i) = -V(k,i);
-// 			}
-// 		}
-// 	}
-// }
-
-// bool compare_index_eigenvalue_pair(const pair<int,double>& a, const pair<int,double>& b)
-// {
-// 	return (a.second > b.second);
-// }
-
-// void sort_eigenvectors(MMatrix& V, MMatrix& D)
-// {
-// 	vector<pair<int,double> > index_eigenvalue_pairs;
-// 	for (int i = 0; i < D.cols(); ++i)
-// 		index_eigenvalue_pairs.push_back(pair<int,double>(i, D(i,i)));
-
-// 	sort(index_eigenvalue_pairs.begin(), index_eigenvalue_pairs.end(), compare_index_eigenvalue_pair);
-
-// 	MMatrix sorted_V(V.rows(), V.cols());
-// 	vector<pair<int,double> >::const_iterator in_ev;
-// 	for (in_ev = index_eigenvalue_pairs.begin(); in_ev != index_eigenvalue_pairs.end(); ++in_ev)
-// 	{
-// 		int j = in_ev->first;
-// 		for (int i = 0; i < V.rows(); ++i)
-// 			sorted_V(i,j) = V(i,j);
-// 	}
-
-// 	V = sorted_V;
-// }
-
-void eigen_decomposition(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbose)
-{
-	QR_algorithm(mat, delta, V, D, verbose);
-	
-	/*Por alguna razón que desconozco, QR_algorithm ya los deja ordenados y positivos
-	* si la matriz es simétrica y semidefinida positiva (como una matriz de covarianza).
-	*/
-	// ensure_positive_diagonal(V, D);
-	// sort_eigenvectors(V, D);
 }
 
 MMatrix transform_images(MMatrix& images, MMatrix& V)

@@ -11,9 +11,7 @@ MMatrix& normalize_in_place(MMatrix& mat);
 
 MMatrix compute_covariance_matrix(MMatrix& mat);
 
-void eigen_decomposition(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbose);
-
-void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbose);
+void QR_algorithm_in_place(MMatrix& A, MMatrix& V, double delta, int& iteration_count, bool verbose);
 
 void QR_factorization_in_place(MMatrix& Q, MMatrix& A);
 

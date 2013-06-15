@@ -46,31 +46,52 @@ int main(int argc, char** argv) {
 	// PRINT_EXPR(Q);
 	// PRINT_EXPR(mat3);
 
-	MMatrix imgs;
+	// MMatrix imgs;
 
-	load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
+	// load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
 
-	MMatrix& imgs_n = normalize_in_place(imgs);
+	// MMatrix& imgs_n = normalize_in_place(imgs);
 
-	PRINT_EXPR(imgs_n)
+	// PRINT_EXPR(imgs_n)
 
-	MMatrix imgs_n_t = imgs_n;
+	// MMatrix imgs_n_t = imgs_n;
 
-	double sqrt_n = sqrt((double) imgs.rows() - 1);
+	// double sqrt_n = sqrt((double) imgs.rows() - 1);
 
-	MMATRIX_MAP_IJ(imgs_n_t, imgs_n_t(i, j) / sqrt_n);
+	// MMATRIX_MAP_IJ(imgs_n_t, imgs_n_t(i, j) / sqrt_n);
 
-	MMatrix X_prod_Xt = imgs_n_t.t() * imgs_n_t;
+	// MMatrix X_prod_Xt = imgs_n_t.t() * imgs_n_t;
 
-	PRINT_EXPR(X_prod_Xt)
+	// PRINT_EXPR(X_prod_Xt)
 
-	//MMatrix V, D;
-	//eigen_decomposition(cov_mat, 1e-5, V, D);
-	//PRINT_EXPR(V);
-	//PRINT_EXPR(D);
+	MMatrix fake_data(100,7);
+	MMATRIX_MAP_IJ(fake_data, rand()%255);
+	PRINT_EXPR(fake_data);
 
-	// MMatrix V_t = V.t();
-	// PRINT_EXPR(V*D*V_t - cov_mat);
+	MMatrix& norm_fake_data = fake_data;
+	normalize_in_place(norm_fake_data);
+	PRINT_EXPR(norm_fake_data);
+
+	MMatrix fake_cov_mat = fake_data.t() * fake_data;
+	fake_cov_mat /= (fake_data.rows() - 1);
+	PRINT_EXPR(fake_cov_mat);
+
+	MMatrix V;
+	V.make_identity_matrix(fake_cov_mat.rows());
+
+	int iteration_count = 0;
+
+	QR_algorithm_in_place(fake_cov_mat, V, 1e-3, iteration_count, true);
+	MMatrix& A_1 = fake_cov_mat; PRINT_EXPR(A_1);
+	MMatrix& V_1 = V; PRINT_EXPR(V_1);
+
+	QR_algorithm_in_place(fake_cov_mat, V, 1e-4, iteration_count, true);
+	MMatrix& A_2 = fake_cov_mat; PRINT_EXPR(A_2);
+	MMatrix& V_2 = V; PRINT_EXPR(V_2);
+
+	QR_algorithm_in_place(fake_cov_mat, V, 1e-5, iteration_count, true);
+	MMatrix& A_3 = fake_cov_mat; PRINT_EXPR(A_3);
+	MMatrix& V_3 = V; PRINT_EXPR(V_3);
 
 	return 0;
 }
