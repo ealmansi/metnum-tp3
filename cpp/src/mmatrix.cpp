@@ -173,14 +173,15 @@ MMatrix MMatrix::operator*(const MMatrix& rhs) const
 		DISPLAY_ERROR_AND_EXIT(DIMENSIONS_MISMATCH(_rows, rhs.rows(), _cols, rhs.cols()));
 
 	MMatrix res(_rows, rhs.cols());
-	for (int i = 0; i < res.rows(); ++i)
-		for (int j = 0; j < res.cols(); ++j)
+	for (int i = 0; i < res.rows(); i++)
+		for (int j = 0; j < res.cols(); j++)
 		{
 			double a_ij = 0;
-			for (int k = 0; k < rhs.rows(); ++k)
+			for (int k = 0; k < rhs.rows(); k++)
 				a_ij += (operator()(i,k)) * (rhs(k,j));
 			res(i,j) = a_ij;
 		}
+
 
 	const MMatrix& lhs = *this;
 	PRINT_EXPR(lhs);

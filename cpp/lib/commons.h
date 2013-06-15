@@ -5,12 +5,13 @@
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
+#include <iomanip>
 
 #define		PRINT_MSG(msg)								\
 	{ std::cout << (msg) << std::endl; }				\
 
 #define		PRINT_EXPR(expr)												\
-	{ std::cout << #expr << " = " << (expr) << ";" << std::endl; }			\
+	{ std::cout << std::setprecision(9) << #expr << " = " << (expr) << ";" << std::endl; }			\
 
 #define		DISPLAY_ERROR_AND_EXIT(msg)																		\
 	{																										\
