@@ -27,33 +27,36 @@ int main(int argc, char** argv)
 	// PRINT_EXPR(normalized);
 
 
-	// MMatrix mat3(7,7);
-	// MMATRIX_MAP_IJ(mat3, rand()%10);
-	// PRINT_EXPR(mat3);
+	MMatrix mat3(7,7);
+	MMATRIX_MAP_IJ(mat3, rand()%10);
+	PRINT_EXPR(mat3);
 
-	// MMatrix Q;
-	// QR_factorization_in_place(Q, mat3);
-	// PRINT_EXPR(Q);
-	// PRINT_EXPR(mat3);
+	MMatrix& R = mat3;
+	MMatrix Q;
+	QR_factorization_in_place(Q, R);
+	PRINT_EXPR(Q);
+	PRINT_EXPR(R);
 
-	MMatrix imgs;
-	load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
+	MMatrix mat4 = mat3.t();
+	mat4 *= mat3;
+	MMatrix V, D;
+	eigen_decomposition(mat4, 1e-5, V, D);
+	PRINT_EXPR(V);
+	PRINT_EXPR(D);
 
-	MMatrix& imgs_n = normalize_in_place(imgs);
+	// MMatrix imgs;
+	// load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
 
-	MMatrix imgs_n_t = imgs_n.t();
+	// MMatrix& imgs_n = normalize_in_place(imgs);
 
-	MMatrix prod = imgs_n_t * imgs_n;
+	// MMatrix imgs_n_t = imgs_n.t();
+
+	// MMatrix prod = imgs_n_t * imgs_n;
 
 	/*	en matlab:
 		>> salida
 		>> norm(res - lhs*rhs)
 	*/
-
-	// MMatrix V, D;
-	// eigen_decomposition(cov_mat, 1e-5, V, D);
-	// PRINT_EXPR(V);
-	// PRINT_EXPR(D);
 
 	// MMatrix V_t = V.t();
 	// PRINT_EXPR(V*D*V_t - cov_mat);
