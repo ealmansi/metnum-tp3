@@ -24,6 +24,8 @@ public:
 	double operator()(int n) const;
 	double& operator()(int i, int j);
 	double operator()(int i, int j) const;
+	double& e(int i, int j);
+	double e(int i, int j) const;
 
 	MMatrix operator-(const MMatrix& rhs) const;
 	MMatrix& operator/=(double rhs);
@@ -48,6 +50,18 @@ private:
 };
 
 ostream& operator<<(ostream &os, const MMatrix &mat);
+
+/* No dimension check */
+inline double& MMatrix::e(int i, int j)
+{
+	return _data[i*_cols+j];
+}
+
+/* No dimension check */
+inline double MMatrix::e(int i, int j) const
+{
+	return _data[i*_cols+j];
+}
 
 /* No dimension check */
 inline double MMatrix::dot_row_col(const MMatrix &lhs, int i, const MMatrix &rhs, int j)

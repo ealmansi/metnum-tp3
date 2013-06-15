@@ -102,8 +102,34 @@ void QR_algorithm(MMatrix& mat, double delta, MMatrix& V, MMatrix& D, bool verbo
 
 		PRINT_ON_VERBOSE("Descomposición QR computada.", verbose);
 
-		D *= Q;
-		V *= Q;
+		// D *= Q;
+		// V *= Q;
+		/* Multiplicación in situ y simultánea para D y V, a ver si acelera un poco... */
+		int size = mat.rows();
+		double aux_row_d[size], aux_row_v[size], aux_row_q[size];
+		for (int i = 0; i < size; ++i)
+		{
+			for (int j = 0; j < size; ++j)
+			{
+				aux_row_d[j] = D.e(i,j);
+				aux_row_v[j] = V.e(i,j);
+			}
+
+			for (int j = 0; j < size; ++j)
+			{
+				for (int k = 0; k < size; ++k)
+					aux_row_q[k] = Q.e(k,j);
+
+				double a_ij_d = 0, a_ij_v = 0;
+				for (int k = 0; k < size; ++k)
+				{
+					a_ij_d += aux_row_d[k] * aux_row_q[k];
+					a_ij_v += aux_row_v[k] * aux_row_q[k];
+				}
+				D.e(i,j) = a_ij_d;
+				V.e(i,j) = a_ij_v;
+			}
+		}
 
 		error = compute_diagonalization_error(D);
 		iteration_count++;
