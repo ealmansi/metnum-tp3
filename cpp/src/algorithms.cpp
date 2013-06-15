@@ -12,6 +12,8 @@ using namespace std;
 
 #define		MAX_ITERATIONS		10000
 
+#define		DBL_TOLERANCE_2_ZERO		1e-8
+
 //	//	gen	//	//
 
 MMatrix compute_mean_row(MMatrix& mat);
@@ -64,6 +66,8 @@ void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
 	for (int i = 0; i < A.cols(); ++i)
 		for (int j = i+1; j < A.rows(); ++j)
 		{
+			if(abs(A(j,i)) < DBL_TOLERANCE_2_ZERO) continue;
+
 			double x1 = A(i,i), x2 = A(j,i);
 			double r = sqrt(x1 * x1 + x2 * x2);
 			double c = x1 / r, s = x2 / r;
