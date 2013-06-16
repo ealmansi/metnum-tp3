@@ -52,13 +52,9 @@ void load_ubyte_images(string filename, MMatrix& images)
 	if( number_of_rows != IMAGE_HEIGHT_PXS || number_of_cols != IMAGE_WIDTH_PXS )
 		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 
-	int number_of_non_empty_cols = 0;
-	bool col_is_empty[number_of_cols];
-	MMatrix images_full(number_of_images, number_of_rows * number_of_cols);
+	images.set_size(number_of_images, number_of_rows * number_of_cols);
 	for (int im = 0; im < number_of_images; ++im)
 		for (int j = 0; j < number_of_cols; ++j)
-		{
-			bool empty_col = true;
 			for (int i = 0; i < number_of_rows; ++i)
 			{
 				file.read(buffer, 1);
@@ -66,28 +62,10 @@ void load_ubyte_images(string filename, MMatrix& images)
 					DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 
 				int n = i * number_of_cols + j;
-				int pixel_value = BYTE_2_INT(buffer);
-				if(pixel_value != 0) empty_col = false;
-
-				images_full(im, n) = ((double)pixel_value);
+				images(im, n) = ((double)BYTE_2_INT(buffer));
 			}
-			col_is_empty[j] = empty_col;
-			if(!empty_col) ++number_of_non_empty_cols;
-		}
 
 	file.close();
-
-	images.set_size(number_of_images, number_of_rows * number_of_non_empty_cols);
-	int images_index = 0;
-	for (int j = 0; j < number_of_cols; ++j)
-	{
-		if(col_is_empty[j]) continue;
-
-		for (int i = 0; i < number_of_rows; ++i)
-			images(i,images_index) = images_full(i,j);
-		++images_index;
-	}
-
 }
 
 void load_ubyte_labels(string filename, vector<int>& labels)
