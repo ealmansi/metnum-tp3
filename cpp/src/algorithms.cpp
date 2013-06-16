@@ -184,6 +184,7 @@ void extended_power_method(MMatrix& A, int k, double delta, MMatrix& V)
 	V.set_size(A.rows(),k);
 	for (int pc = 0; pc < k; ++pc)
 	{
+		PRINT_ON_VERBOSE("Empezando con el autovector número: " + int2str(pc), true)
 		MMatrix v;
 		power_method(A, delta, v);
 		double lambda = (v.t() * A * v)(0,0);

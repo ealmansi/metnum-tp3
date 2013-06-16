@@ -46,9 +46,19 @@ int main(int argc, char** argv) {
 	// PRINT_EXPR(Q);
 	// PRINT_EXPR(mat3);
 
-	// MMatrix imgs;
+	MMatrix imgs;
 
-	// load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
+	load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
+
+	PRINT_EXPR(imgs);
+
+	MMatrix cov_mat = compute_covariance_matrix(imgs);
+
+	PRINT_EXPR(cov_mat);
+
+	MMatrix V;
+	extended_power_method(cov_mat, 5, 1e-8, V);
+	PRINT_EXPR(V);
 
 	// PRINT_EXPR(imgs);
 
@@ -66,21 +76,17 @@ int main(int argc, char** argv) {
 
 	// PRINT_EXPR(X_prod_Xt)
 
-	MMatrix fake_data(100,700);
-	MMATRIX_MAP_IJ(fake_data, rand()%255);
-	// PRINT_EXPR(fake_data);
+	// MMatrix fake_data(100,700);
+	// MMATRIX_MAP_IJ(fake_data, rand()%255);
+	// // PRINT_EXPR(fake_data);
 
-	MMatrix& norm_fake_data = fake_data;
-	normalize_in_place(norm_fake_data);
-	// PRINT_EXPR(norm_fake_data);
+	// MMatrix& norm_fake_data = fake_data;
+	// normalize_in_place(norm_fake_data);
+	// // PRINT_EXPR(norm_fake_data);
 
-	MMatrix fake_cov_mat = fake_data.t() * fake_data;
-	fake_cov_mat /= (fake_data.rows() - 1);
-	PRINT_EXPR(fake_cov_mat);
-
-	MMatrix V;
-	extended_power_method(fake_cov_mat, 1, 1e-8, V);
-	PRINT_EXPR(V);
+	// MMatrix fake_cov_mat = fake_data.t() * fake_data;
+	// fake_cov_mat /= (fake_data.rows() - 1);
+	// PRINT_EXPR(fake_cov_mat);
 
 	// MMatrix V;
 	// V.make_identity_matrix(fake_cov_mat.rows());
