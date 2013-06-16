@@ -23,7 +23,9 @@ MMatrix transform_images(MMatrix& images, MMatrix& V);
 
 MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels);
 
-void power_method(MMatrix& A, double delta, MMatrix& v, double& lambda);
+void extended_power_method(MMatrix& A, int k, double delta, MMatrix& V);
+
+void power_method(MMatrix& A, double delta, MMatrix& v);
 
 //	//	classif	//	//
 

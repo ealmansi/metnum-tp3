@@ -8,7 +8,10 @@ using namespace std;
 #include "algorithms.h"
 #include "mmatrix.h"
 
-#define		CONVERGENCE_NOT_ATTAINED(it, err, dlt)	("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Se alcanzó un error de " + double2str(err) + ", ante una tolerancia de " + double2str(dlt))
+#define		CONVERGENCE_NOT_ATTAINED(it, err, dlt)		\
+				("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Se alcanzó un error de " + double2str(err) + ", ante una tolerancia de " + double2str(dlt))
+#define		CONVERGENCE_NOT_ATTAINED_POWER_MTH(it, drch, dlt)		\
+				("El método de la potencia extendido no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Luego de la última iteración, el cambio en dirección de la estimación era de " + double2str(drch) + ", ante un valor máximo requerido de: " + double2str(dlt))
 
 #define		MAX_ITERATIONS		10000
 #define		NUM_DIGITS			10
@@ -176,18 +179,43 @@ double norm(MMatrix& m)
 	return sqrt(acc);
 }
 
-void power_method(MMatrix& A, double delta, MMatrix& v, double& lambda)
+void extended_power_method(MMatrix& A, int k, double delta, MMatrix& V)
 {
+	V.set_size(A.rows(),k);
+	for (int pc = 0; pc < k; ++pc)
+	{
+		MMatrix v;
+		power_method(A, delta, v);
+		double lambda = (v.t() * A * v)(0,0);
+
+		MMATRIX_MAP_IJ(A, A(i,j) - lambda * v(i) * v(j) );
+
+		for (int i = 0; i < A.rows(); ++i)
+			V(i,pc) = v(i);
+	}
+}
+
+void power_method(MMatrix& A, double delta, MMatrix& v)
+{
+	v.set_size(A.rows(),1);
 	MMATRIX_MAP_IJ(v, ((double)rand())/RAND_MAX);
 	v /= norm(v);
 
-	for (int i = 0; i < 1000; ++i)
+	int iteration_count;
+	double direction_rate_of_change;
+	for (iteration_count = 0; iteration_count < MAX_ITERATIONS; ++iteration_count)
 	{
-		v = A * v;
-		v /= norm(v);
+		MMatrix y = A * v;
+		y /= norm(y);
+
+		direction_rate_of_change = 1 - abs(MMatrix::dot_col_col(v,0,y,0));
+		if(direction_rate_of_change <= delta) break;
+
+		v = y;
 	}
 
-	lambda = (v.t() * A * v)(0,0);
+	if(iteration_count == MAX_ITERATIONS)
+		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED_POWER_MTH(iteration_count, direction_rate_of_change, delta));
 }
 
 //	//	classif	//	//

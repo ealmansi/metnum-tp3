@@ -50,6 +50,8 @@ int main(int argc, char** argv) {
 
 	// load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
 
+	// PRINT_EXPR(imgs);
+
 	// MMatrix& imgs_n = normalize_in_place(imgs);
 
 	// PRINT_EXPR(imgs_n)
@@ -64,7 +66,7 @@ int main(int argc, char** argv) {
 
 	// PRINT_EXPR(X_prod_Xt)
 
-	MMatrix fake_data(100,200);
+	MMatrix fake_data(100,700);
 	MMATRIX_MAP_IJ(fake_data, rand()%255);
 	// PRINT_EXPR(fake_data);
 
@@ -76,17 +78,9 @@ int main(int argc, char** argv) {
 	fake_cov_mat /= (fake_data.rows() - 1);
 	PRINT_EXPR(fake_cov_mat);
 
-	MMatrix v(fake_cov_mat.cols(), 1);
-	double lambda;
-	for (int i = 0; i < 5; ++i)
-	{
-		power_method(fake_cov_mat, 0.001, v, lambda);
-
-		MMATRIX_MAP_IJ(fake_cov_mat, fake_cov_mat(i,j) - lambda * v(i) * v(j) );
-
-		PRINT_NAMED_EXPR("v_" + int2str(i), v);
-		PRINT_NAMED_EXPR("lambda_" + int2str(i), lambda);
-	}
+	MMatrix V;
+	extended_power_method(fake_cov_mat, 1, 1e-8, V);
+	PRINT_EXPR(V);
 
 	// MMatrix V;
 	// V.make_identity_matrix(fake_cov_mat.rows());
