@@ -1,5 +1,5 @@
-#ifndef __GEN_ALGORITHMS_H__
-#define __GEN_ALGORITHMS_H__
+#ifndef __ALGORITHMS_H__
+#define __ALGORITHMS_H__
 
 #include <vector>
 
@@ -23,8 +23,10 @@ MMatrix transform_images(MMatrix& images, MMatrix& V);
 
 MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels);
 
+void power_method(MMatrix& A, double delta, MMatrix& v, double& lambda);
+
 //	//	classif	//	//
 
 int classify_images(MMatrix& images, vector<int>& labels, MMatrix& V, MMatrix& avgs, int k);
 
-#endif // __GEN_ALGORITHMS_H__
+#endif // __ALGORITHMS_H__

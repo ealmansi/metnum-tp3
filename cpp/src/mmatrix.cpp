@@ -168,6 +168,13 @@ MMatrix MMatrix::operator-(const MMatrix& rhs) const
 	return res;
 }
 
+MMatrix& MMatrix::operator*=(double rhs)
+{
+	MMATRIX_MAP_IJ(*this, operator()(i,j) * rhs);
+
+	return *this;
+}
+
 MMatrix& MMatrix::operator/=(double rhs)
 {
 	if( abs(rhs) < DBL_TOLERANCE_2_ZERO )
@@ -223,6 +230,14 @@ MMatrix& MMatrix::t_in_place()
 	});
 
 	return *this;
+}
+
+MMatrix MMatrix::identity_matrix(int size)
+{
+	MMatrix res(size, size);
+	MMATRIX_MAP_IJ(res, (i == j)?(1):(0));
+
+	return res;
 }
 
 MMatrix& MMatrix::make_identity_matrix(int size)

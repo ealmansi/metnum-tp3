@@ -64,34 +64,52 @@ int main(int argc, char** argv) {
 
 	// PRINT_EXPR(X_prod_Xt)
 
-	MMatrix fake_data(100,7);
+	MMatrix fake_data(100,200);
 	MMATRIX_MAP_IJ(fake_data, rand()%255);
-	PRINT_EXPR(fake_data);
+	// PRINT_EXPR(fake_data);
 
 	MMatrix& norm_fake_data = fake_data;
 	normalize_in_place(norm_fake_data);
-	PRINT_EXPR(norm_fake_data);
+	// PRINT_EXPR(norm_fake_data);
 
 	MMatrix fake_cov_mat = fake_data.t() * fake_data;
 	fake_cov_mat /= (fake_data.rows() - 1);
 	PRINT_EXPR(fake_cov_mat);
 
-	MMatrix V;
-	V.make_identity_matrix(fake_cov_mat.rows());
+	MMatrix v(fake_cov_mat.cols(), 1);
+	double lambda;
+	for (int i = 0; i < 5; ++i)
+	{
+		power_method(fake_cov_mat, 0.001, v, lambda);
 
-	int iteration_count = 0;
+		MMATRIX_MAP_IJ(fake_cov_mat, fake_cov_mat(i,j) - lambda * v(i) * v(j) );
 
-	QR_algorithm_in_place(fake_cov_mat, V, 1e-3, iteration_count, true);
-	MMatrix& A_1 = fake_cov_mat; PRINT_EXPR(A_1);
-	MMatrix& V_1 = V; PRINT_EXPR(V_1);
+		PRINT_NAMED_EXPR("v_" + int2str(i), v);
+		PRINT_NAMED_EXPR("lambda_" + int2str(i), lambda);
+	}
 
-	QR_algorithm_in_place(fake_cov_mat, V, 1e-4, iteration_count, true);
-	MMatrix& A_2 = fake_cov_mat; PRINT_EXPR(A_2);
-	MMatrix& V_2 = V; PRINT_EXPR(V_2);
+	// MMatrix V;
+	// V.make_identity_matrix(fake_cov_mat.rows());
 
-	QR_algorithm_in_place(fake_cov_mat, V, 1e-5, iteration_count, true);
-	MMatrix& A_3 = fake_cov_mat; PRINT_EXPR(A_3);
-	MMatrix& V_3 = V; PRINT_EXPR(V_3);
+	// int iteration_count = 0;
+
+	// QR_algorithm_in_place(fake_cov_mat, V, 1e-3, iteration_count, true);
+	// MMatrix& A_1 = fake_cov_mat; PRINT_EXPR(A_1);
+	// MMatrix& V_1 = V; PRINT_EXPR(V_1);
+
+	// QR_algorithm_in_place(fake_cov_mat, V, 1e-4, iteration_count, true);
+	// MMatrix& A_2 = fake_cov_mat; PRINT_EXPR(A_2);
+	// MMatrix& V_2 = V; PRINT_EXPR(V_2);
+
+	// QR_algorithm_in_place(fake_cov_mat, V, 1e-5, iteration_count, true);
+	// MMatrix& A_3 = fake_cov_mat; PRINT_EXPR(A_3);
+	// MMatrix& V_3 = V; PRINT_EXPR(V_3);
+
+	//     Rayleigh's method is:  (1) Start with an initial non-zero vector x0,   //
+//     (2) Normalize the current vector x[k], (3) x[k+1] = A x[k],            //
+//     (4) let z = x[k+1]'x[k], (5) if the relative difference of the new     //
+//     value of z and the old value of z is less than a preassigned tolerance,//
+//     then halt the procedure; otherwise go to step (2).                     //
 
 	return 0;
 }

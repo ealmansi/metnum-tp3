@@ -93,9 +93,11 @@ void QR_algorithm_in_place(MMatrix& A, MMatrix& V, double delta, int& iteration_
 	{
 		PRINT_ON_VERBOSE("Número de iteración: " + int2str(iteration_count) + ", error: " + double2str(error), verbose);
 
+		BEGIN_TIMER();
+
 		QR_factorization_in_place(Q,A);
 
-		PRINT_ON_VERBOSE("Descomposición QR computada.", verbose);
+		PRINT_ON_VERBOSE("Descomposición QR computada. Tiempo: " + double2str(MSECS_ELAPSED()) + ".", verbose);
 
 		// A *= Q;
 		// V *= Q;
@@ -107,24 +109,22 @@ void QR_algorithm_in_place(MMatrix& A, MMatrix& V, double delta, int& iteration_
 			for (int j = 0; j < size; ++j)
 			{
 				aux_row_a[j] = A.e(i,j);
+				A.e(i,j) = 0;
 				aux_row_v[j] = V.e(i,j);
+				V.e(i,j) = 0;
 			}
 
-			for (int j = 0; j < size; ++j)
+			for (int k = 0; k < size; ++k)
 			{
-				for (int k = 0; k < size; ++k)
-					aux_row_q[k] = Q.e(k,j);
-
-				double a_ij_a = 0, a_ij_v = 0;
-				for (int k = 0; k < size; ++k)
+				for (int j = 0; j < size; ++j)
 				{
-					a_ij_a += aux_row_a[k] * aux_row_q[k];
-					a_ij_v += aux_row_v[k] * aux_row_q[k];
+					A.e(i,j) += aux_row_a[k] * Q(k,j);
+					V.e(i,j) += aux_row_v[k] * Q(k,j);
 				}
-				A.e(i,j) = a_ij_a;
-				V.e(i,j) = a_ij_v;
 			}
 		}
+
+		PRINT_ON_VERBOSE("Fin de iteración. Tiempo: " + double2str(MSECS_ELAPSED()) + ".", verbose);
 
 		error = compute_diagonalization_error(A);
 		iteration_count++;
@@ -164,6 +164,30 @@ MMatrix compute_mean_row(MMatrix& mat)
 	mean_row /= mat.rows();
 
 	return mean_row;
+}
+
+double norm(MMatrix& m)
+{
+	double acc = 0;
+	MMATRIX_WALK_IJ(m, {
+		acc += m(i,j)*m(i,j);
+	});
+
+	return sqrt(acc);
+}
+
+void power_method(MMatrix& A, double delta, MMatrix& v, double& lambda)
+{
+	MMATRIX_MAP_IJ(v, ((double)rand())/RAND_MAX);
+	v /= norm(v);
+
+	for (int i = 0; i < 1000; ++i)
+	{
+		v = A * v;
+		v /= norm(v);
+	}
+
+	lambda = (v.t() * A * v)(0,0);
 }
 
 //	//	classif	//	//

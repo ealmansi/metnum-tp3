@@ -28,6 +28,7 @@ public:
 	double e(int i, int j) const;
 
 	MMatrix operator-(const MMatrix& rhs) const;
+	MMatrix& operator*=(double rhs);
 	MMatrix& operator/=(double rhs);
 	MMatrix operator*(const MMatrix& rhs) const;
 	MMatrix& operator*=(const MMatrix& rhs);
@@ -35,6 +36,7 @@ public:
 	MMatrix t() const;					// transposition
 	MMatrix& t_in_place();				// (only squared matrices)
 
+	static MMatrix identity_matrix(int size);
 	MMatrix& make_identity_matrix(int size);
 
 	static double dot_row_col(const MMatrix &lhs, int i, const MMatrix &rhs, int j);
