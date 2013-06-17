@@ -8,15 +8,14 @@ using namespace std;
 #include "algorithms.h"
 #include "mmatrix.h"
 
-#define		CONVERGENCE_NOT_ATTAINED(it, err, dlt)		\
-				("El algoritmo QR no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Se alcanzó un error de " + double2str(err) + ", ante una tolerancia de " + double2str(dlt))
 #define		CONVERGENCE_NOT_ATTAINED_POWER_MTH(it, drch, dlt)		\
-				("El método de la potencia extendido no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Luego de la última iteración, el cambio en dirección de la estimación era de " + double2str(drch) + ", ante un valor máximo requerido de: " + double2str(dlt))
+				("El método de la potencia no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Luego de la última iteración, el cambio en dirección de la estimación era de " + double2str(drch) + ", ante un valor máximo aceptado de: " + double2str(dlt))
 
 #define		MAX_ITERATIONS		10000
+				
 #define		NUM_DIGITS			10
 
-//	//	gen	//	//
+//	//	//	//
 
 MMatrix compute_mean_row(MMatrix& mat);
 void extended_power_method(MMatrix& A, int k, double delta, MMatrix& V);
@@ -25,23 +24,27 @@ void sort_eigenvectors(MMatrix& V, vector<double>& eigenvalues);
 double compute_raleygh_quotient(MMatrix& v, MMatrix& A);
 double norm(MMatrix& m);
 
-MMatrix& normalize_in_place(MMatrix& mat)
+//	//	//	//
+
+MMatrix normalize_variables(MMatrix& mat)
 {
 	MMatrix mean_row = compute_mean_row(mat);
-	foreach_a_ij(mat, a_ij = a_ij - mean_row(j));
 
-	return mat;
+	MMatrix norm_mat(mat.rows(), mat.cols());
+	foreach_a_ij(norm_mat, a_ij = mat(i,j) - mean_row(j));
+
+	return norm_mat;
 }
 
 MMatrix compute_covariance_matrix(MMatrix& mat)
 {
-	normalize_in_place(mat);
+	MMatrix norm_mat = normalize_variables(mat);
 
-	MMatrix cov_mat(mat.cols(),mat.cols());
-	double denominator = 1.0/(mat.rows() - 1);
+	MMatrix cov_mat(norm_mat.cols(),norm_mat.cols());
+	double denominator = 1.0/(norm_mat.rows() - 1);
 
 	foreach_a_ij_lower_triangular(cov_mat,{
-		cov_mat(i,j) = cov_mat(j,i) = (MMatrix::dot_col_col(mat, i, mat, j) * denominator);
+		cov_mat(i,j) = cov_mat(j,i) = (MMatrix::dot_col_col(norm_mat, i, norm_mat, j) * denominator);
 	});
 
 	return cov_mat;
@@ -53,7 +56,7 @@ MMatrix compute_transformation_matrix(MMatrix& A, int num_eigenvectors, double d
 	vector<double> eigenvalues;
 	for (int k = 0; k < num_eigenvectors; ++k)
 	{
-		PRINT_ON_VERBOSE("Empezando con el autovector número: " + int2str(k), verbose)
+		PRINT_ON_VERBOSE("Calculando el autovector número: " + int2str(k), verbose)
 
 		MMatrix v = power_method(A, delta);
 		double lambda = compute_raleygh_quotient(v, A);
@@ -143,8 +146,6 @@ double norm(MMatrix& v)
 	return sqrt(res);
 }
 
-//	//	//	//
-
 MMatrix transform_images(MMatrix& images, MMatrix& V)
 {
 	return images * V;
@@ -152,17 +153,21 @@ MMatrix transform_images(MMatrix& images, MMatrix& V)
 
 MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels)
 {
-	// int digits_count[NUM_DIGITS] = {0};
-	// MMatrix avgs(NUM_DIGITS, transf_images.cols(), 0.0);
+	int images_per_digit[NUM_DIGITS] = {0};
+	MMatrix avgs(NUM_DIGITS, transf_images.cols(), 0.0);
 
-	// MMATRIX_WALK_IJ(transf_images,{
-	// 	avgs(labels.at(i), j) += transf_images(i,j);
-	// 	digits_count[labels.at(i)]++;
-	// });
+	for (int i = 0; i < transf_images.rows(); ++i)
+	{
+		int digit_index = labels.at(i);
+		++images_per_digit[digit_index];
 
-	// MMATRIX_WALK_IJ(avgs, avgs(i,j) / digits_count[i]);
+		for (int j = 0; j < transf_images.cols(); ++j)
+			avgs(digit_index, j) += transf_images(i,j);
+	}
 
-	// return avgs;
+	foreach_a_ij(avgs, a_ij = (a_ij / images_per_digit[i]));
+
+	return avgs;
 }
 
 MMatrix compute_mean_row(MMatrix& mat)
@@ -176,8 +181,6 @@ MMatrix compute_mean_row(MMatrix& mat)
 
 	return mean_row;
 }
-
-//	//	classif	//	//
 
 int classify_image(MMatrix& image_row, MMatrix& V, MMatrix& avgs, int k)
 {

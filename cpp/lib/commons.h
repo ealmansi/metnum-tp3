@@ -55,4 +55,16 @@ inline double swap(double& a, double& b)
 	b = temp;
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+{
+	os << "[";
+	typename std::vector<T>::const_iterator i;
+	for (i = vec.begin(); i != vec.end(); ++i)
+		os << std::setw(20) << *i << " ";
+	os << "]";
+
+	return os;
+}
+
 #endif	// __COMMON_MACROS_H__

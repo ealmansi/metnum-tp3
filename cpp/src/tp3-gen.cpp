@@ -31,7 +31,9 @@ int main(int argc, char** argv)
 	MMatrix images;
 	vector<int> labels;
 	load_mnist_data(args.images_filename, args.labels_filename, images, labels);
-	
+	PRINT_EXPR(images);
+	PRINT_EXPR(labels);
+
 	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ".", args.verbose);
 
 	MMatrix cov_mat = compute_covariance_matrix(images);
@@ -44,19 +46,23 @@ int main(int argc, char** argv)
 	{
 		PRINT_ON_VERBOSE("Comenzando a computar los datos para delta = " + double2str(*delta), args.verbose);
 
-	 	MMatrix V = compute_transformation_matrix(cov_mat, 30, *delta, args.verbose);
+	 	MMatrix V = compute_transformation_matrix(cov_mat, 5, *delta, args.verbose);
 
 		PRINT_ON_VERBOSE("Matriz de transformación computada.", args.verbose);
 
 	 	PRINT_EXPR(V);
 
-	 	// MMatrix transf_images = transform_images(images, V);
+	 	MMatrix transf_images = transform_images(images, V);
 
-	 	// PRINT_ON_VERBOSE("Imágenes transformadas.", args.verbose);
+	 	PRINT_EXPR(transf_images);
+
+	 	PRINT_ON_VERBOSE("Imágenes transformadas.", args.verbose);
 		
-	 	// MMatrix avgs = compute_average_by_digit(transf_images, labels);
+	 	MMatrix avgs = compute_average_by_digit(transf_images, labels);
 
-	 	// PRINT_ON_VERBOSE("Promedios según dígito computados.", args.verbose);
+	 	PRINT_EXPR(avgs);
+
+	 	PRINT_ON_VERBOSE("Promedios según dígito computados.", args.verbose);
 
 	 	// write_data_file(*delta, V, avgs);
 
