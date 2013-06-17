@@ -18,7 +18,7 @@ using namespace std;
 #define		BYTE_2_INT(buff)		 	((int)(0xFF & ((unsigned char)*(buff))))
 #define 	BYTE_ARRAY_2_INT(buff) 		((BYTE_2_INT(buff) << 24) + (BYTE_2_INT(buff+1) << 16) + (BYTE_2_INT(buff+2) << 8)  + (BYTE_2_INT(buff+3) << 0))
 
-#define  	LIMIT	1000
+#define  	LIMIT	50
 
 void load_ubyte_images(string filename, MMatrix& images)
 {
@@ -106,14 +106,106 @@ void load_mnist_data(string images_filename, string labels_filename, MMatrix& im
 		DISPLAY_ERROR_AND_EXIT(IMAGES_LABELS_INCONSISTENCY(images_filename, labels_filename));
 }
 
+#define		BYTE_ARRAY_DOUBLE_LEN		(sizeof(double))
+#define		BYTE_ARRAY_INT_LEN		(sizeof(int))
+
+typedef union {
+    char bytes[BYTE_ARRAY_INT_LEN];
+    int value;
+} ByteArrayIntConverter;
+
+typedef union {
+    char bytes[BYTE_ARRAY_DOUBLE_LEN];
+    double value;
+} ByteArrayDoubleConverter;
+
 void write_data_file(double delta, MMatrix& V, MMatrix& avgs)
 {
+	string filename = "tp3_data_delta_" + double2str(delta) + ".mdat";
+	ofstream file (filename.c_str(), ios::out | ios::binary);
 
+	ByteArrayIntConverter int_converter;
+	ByteArrayDoubleConverter double_converter;
+
+    double_converter.value = delta;
+    file.write(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+
+    int_converter.value = V.rows();
+    file.write(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+
+    int_converter.value = V.cols();
+    file.write(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+
+    for (int i = 0; i < V.rows(); ++i)
+    {
+    	for (int j = 0; j < V.cols(); ++j)
+    	{
+    		double_converter.value = V(i,j);
+    		file.write(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    	}
+    }
+
+    int_converter.value = avgs.rows();
+    file.write(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+
+    int_converter.value = avgs.cols();
+    file.write(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+
+    for (int i = 0; i < avgs.rows(); ++i)
+    {
+    	for (int j = 0; j < avgs.cols(); ++j)
+    	{
+    		double_converter.value = avgs(i,j);
+    		file.write(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    	}
+    }
+
+	file.close();
 }
 
 void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs)
 {
+	ifstream file (filename.c_str(), ios::in | ios::binary);
 
+	ByteArrayIntConverter int_converter;
+	ByteArrayDoubleConverter double_converter;
+
+    file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    delta = double_converter.value;
+
+    file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    int rows = int_converter.value;
+
+    file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    int cols = int_converter.value;
+
+    V.set_size(rows, cols);
+    for (int i = 0; i < rows; ++i)
+    {
+    	for (int j = 0; j < cols; ++j)
+    	{
+    		file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    		V(i,j) = double_converter.value;
+    	}
+    }
+
+    file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    rows = int_converter.value;
+
+    file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    cols = int_converter.value;
+
+    avgs.set_size(rows, cols);
+    for (int i = 0; i < rows; ++i)
+    {
+    	for (int j = 0; j < cols; ++j)
+    	{
+    		file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    		avgs(i,j) = double_converter.value;
+    	}
+    }
+
+	file.close();
 }
 
 void write_results(ofstream& output_file, double delta, int k, int hits)

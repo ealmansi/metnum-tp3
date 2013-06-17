@@ -3,10 +3,14 @@
 #include <vector>
 using namespace std;
 
+#include "../lib/commons.h"
 #include "cmd-args.h"
 #include "mmatrix.h"
 #include "data-io.h"
 #include "algorithms.h"
+
+#define		FILE_NOT_CREATED(fn)	\
+				("No se pudo crear el archivo: " + fn)
 
 /*
 - programa clasificador [recibe: test set image/label files, k's, archivos-binarios-de-datos | devuelve: archivo de resultados]
@@ -26,10 +30,15 @@ int main(int argc, char** argv)
 
 	MMatrix images;
 	vector<int> labels;
+	
+	BEGIN_TIMER();
 	load_mnist_data(args.images_filename, args.labels_filename, images, labels);
+	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 
 	ofstream output_file;
 	output_file.open(args.output_filename.c_str());
+	if(!output_file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_CREATED(args.output_filename));
 
 	MMatrix V, avgs;
 	vector<string>::const_iterator data_file;
@@ -37,13 +46,15 @@ int main(int argc, char** argv)
 	{
 		double delta;
 		load_data_file(*data_file, delta, V, avgs);
+		PRINT_ON_VERBOSE("Archivo de datos cargado, delta: " + double2str(delta) + ".", args.verbose);
 
-		vector<int>::const_iterator k;
-		for (k = args.k_values.begin(); k != args.k_values.end(); ++k)
-		{
-			int hits = classify_images(images, labels, V, avgs, *k);
-			write_results(output_file, delta, *k, hits);
-		}
+		// vector<int>::const_iterator k;
+		// for (k = args.k_values.begin(); k != args.k_values.end(); ++k)
+		// {
+		// 	PRINT_ON_VERBOSE("Comenzando la clasificación con k: " + int2str(k), args.verbose);
+		// 	int hits = classify_images(images, labels, V, avgs, *k);
+		// 	write_results(output_file, delta, *k, hits);
+		// }
 	}
 
 	output_file.close();

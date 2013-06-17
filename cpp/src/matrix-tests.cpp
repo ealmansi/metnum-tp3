@@ -12,6 +12,15 @@ using namespace std;
 int main(int argc, char** argv) {
 	srand(time(0));
 
+	PRINT_EXPR(clock());
+	int a;
+	for (int i = 0; i < 1000000; ++i)
+		for (int i = 0; i < 1000; ++i)
+			a += i;
+
+	PRINT_EXPR(a);
+	PRINT_EXPR(clock());
+
 	// MMatrix imgs;
 
 	// load_ubyte_images("../data/train-images.idx3-ubyte", imgs);

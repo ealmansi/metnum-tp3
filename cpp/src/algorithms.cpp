@@ -56,7 +56,7 @@ MMatrix compute_transformation_matrix(MMatrix A, int num_eigenvectors, double de
 	vector<double> eigenvalues;
 	for (int k = 0; k < num_eigenvectors; ++k)
 	{
-		PRINT_ON_VERBOSE("Calculando el autovector número: " + int2str(k), verbose)
+		BEGIN_TIMER();
 
 		MMatrix v = power_method(A, delta);
 		double lambda = compute_raleygh_quotient(v, A);
@@ -68,6 +68,8 @@ MMatrix compute_transformation_matrix(MMatrix A, int num_eigenvectors, double de
 		foreach_v_i(v,{
 			V(i,k) = v_i;
 		});
+
+		PRINT_ON_VERBOSE("Autovector número " + int2str(k) + " calculado; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", verbose)
 	}
 
 	sort_eigenvectors(V, eigenvalues);

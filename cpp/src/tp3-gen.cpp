@@ -30,43 +30,35 @@ int main(int argc, char** argv)
 
 	MMatrix images;
 	vector<int> labels;
+	
+	BEGIN_TIMER();
 	load_mnist_data(args.images_filename, args.labels_filename, images, labels);
-	PRINT_EXPR(images);
-	PRINT_EXPR(labels);
+	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 
-	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ".", args.verbose);
-
+	RESET_TIMER();
 	MMatrix cov_mat = compute_covariance_matrix(images);
-	PRINT_EXPR(cov_mat);
-
-	PRINT_ON_VERBOSE("Matriz de varianza computada.", args.verbose);
+	PRINT_ON_VERBOSE("Matriz de varianza computada; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 
 	vector<double>::const_iterator delta;
 	for (delta = args.delta_values.begin(); delta != args.delta_values.end(); ++delta)
 	{
-		PRINT_ON_VERBOSE("Comenzando a computar los datos para delta = " + double2str(*delta), args.verbose);
+		PRINT_ON_VERBOSE("Comenzando a computar los datos para delta = " + double2str(*delta) + ".", args.verbose);
 
-	 	MMatrix V = compute_transformation_matrix(cov_mat, 5, *delta, args.verbose);
+		RESET_TIMER();
+	 	MMatrix V = compute_transformation_matrix(cov_mat, 2, *delta, args.verbose);
+		PRINT_ON_VERBOSE("Matriz de transformación computada; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 
-		PRINT_ON_VERBOSE("Matriz de transformación computada.", args.verbose);
-
-	 	PRINT_EXPR(V);
-
+		RESET_TIMER();
 	 	MMatrix transf_images = transform_images(images, V);
-
-	 	PRINT_EXPR(transf_images);
-
-	 	PRINT_ON_VERBOSE("Imágenes transformadas.", args.verbose);
+	 	PRINT_ON_VERBOSE("Imágenes transformadas; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 		
+		RESET_TIMER();
 	 	MMatrix avgs = compute_average_by_digit(transf_images, labels);
+	 	PRINT_ON_VERBOSE("Promedios según dígito computados; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 
-	 	PRINT_EXPR(avgs);
-
-	 	PRINT_ON_VERBOSE("Promedios según dígito computados.", args.verbose);
-
-	 	// write_data_file(*delta, V, avgs);
-
-	 	// PRINT_ON_VERBOSE("Datos escritos en el archivo de salida.", args.verbose);
+	 	RESET_TIMER();
+	 	write_data_file(*delta, V, avgs);
+	 	PRINT_ON_VERBOSE("Datos escritos en el archivo de salida; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 	}
 
 	PRINT_ON_VERBOSE("Datos computados para todos los valores de delta. Terminando la ejecución...", args.verbose);

@@ -29,8 +29,9 @@
 
 #define		DBL_TOLERANCE_2_ZERO		1e-8
 
-#define		BEGIN_TIMER()		clock_t _start_t_macro_var_ = clock();
-#define		MSECS_ELAPSED()		((int)((clock() - _start_t_macro_var_)* 1000 / CLOCKS_PER_SEC))
+#define		BEGIN_TIMER()			clock_t _start_t_macro_var_ = clock();
+#define		RESET_TIMER()			{_start_t_macro_var_ = clock();}
+#define		MSECS_ELAPSED()			((int)((clock() - _start_t_macro_var_)* 1000 / CLOCKS_PER_SEC))
 
 #define		MIN(a,b)		(((a) < (b))?(a):(b))
 #define		MAX(a,b)		(((a) > (b))?(a):(b))
