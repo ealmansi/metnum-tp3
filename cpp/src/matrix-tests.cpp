@@ -12,53 +12,19 @@ using namespace std;
 int main(int argc, char** argv) {
 	srand(time(0));
 
-	// MMatrix mat1(10, 10);
-	// MMATRIX_MAP_IJ(mat1, rand()%10);
-	// PRINT_EXPR(mat1);
+	// MMatrix imgs;
 
-	// MMatrix mat2(10, 10);
-	// MMATRIX_MAP_IJ(mat2, rand()%10);
-	// PRINT_EXPR(mat2);
+	// load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
 
-	// MMatrix mat3 = mat1 * mat2;
-	// PRINT_EXPR(mat3);
+	// PRINT_EXPR(imgs);
 
-	// MMatrix mat1(10,7);
-	// MMATRIX_MAP_IJ(mat1, rand()%10);
-	// PRINT_EXPR(mat1);
+	// MMatrix cov_mat = compute_covariance_matrix(imgs);
 
-	// MMatrix mat2(3,3);
-	// MMATRIX_MAP_IJ(mat2, rand()%10);
-	// PRINT_EXPR(mat2);
+	// PRINT_EXPR(cov_mat);
 
-	// mat1.multiply_in_place(mat2);
-	// PRINT_EXPR(mat1);
-
-	// MMatrix normalized = normalize(mat1);
-	// PRINT_EXPR(normalized);
-
-	// MMatrix mat3(7,7);
-	// MMATRIX_MAP_IJ(mat3, rand()%10);
-	// PRINT_EXPR(mat3);
-
-	// MMatrix Q;
-	// QR_factorization_in_place(Q, mat3);
-	// PRINT_EXPR(Q);
-	// PRINT_EXPR(mat3);
-
-	MMatrix imgs;
-
-	load_ubyte_images("../data/train-images.idx3-ubyte", imgs);
-
-	PRINT_EXPR(imgs);
-
-	MMatrix cov_mat = compute_covariance_matrix(imgs);
-
-	PRINT_EXPR(cov_mat);
-
-	MMatrix V;
-	extended_power_method(cov_mat, 5, 1e-8, V);
-	PRINT_EXPR(V);
+	// MMatrix V;
+	// extended_power_method(cov_mat, 5, 1e-8, V);
+	// PRINT_EXPR(V);
 
 	// PRINT_EXPR(imgs);
 

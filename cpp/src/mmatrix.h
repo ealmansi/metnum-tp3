@@ -14,9 +14,12 @@ public:
 
 	int rows() const;
 	int cols() const;
+	int size() const;
 
 	MMatrix row(int r) const;
+	void copy_row(int r, MMatrix& row) const;
 	MMatrix col(int c) const;
+	void copy_col(int c, MMatrix& col) const;
 
 	MMatrix& operator=(const MMatrix& rvalue);
 
@@ -41,6 +44,7 @@ public:
 
 	static double dot_row_col(const MMatrix &lhs, int i, const MMatrix &rhs, int j);
 	static double dot_col_col(const MMatrix &lhs, int j1, const MMatrix &rhs, int j2);
+	static double dot(const MMatrix &lhs, const MMatrix &rhs);
 
 private:
 	void initialize();
@@ -85,16 +89,48 @@ inline double MMatrix::dot_col_col(const MMatrix &lhs, int j1, const MMatrix &rh
 	return res;
 }
 
-#define		MMATRIX_WALK_IJ(mat, code)						\
-{															\
-	int _mmwalkij_rs = (mat).rows();						\
-	int _mmwalkij_cs = (mat).cols();						\
-	for (int i = 0; i < _mmwalkij_rs; ++i)					\
-		for (int j = 0; j < _mmwalkij_cs; ++j)				\
-			{code;}											\
+/* No dimension check, only vectors */
+inline double MMatrix::dot(const MMatrix &lhs, const MMatrix &rhs)
+{
+	double res = 0;
+	for (int k = 0; k < lhs.size(); ++k)
+		res += lhs(k) * rhs(k);
+
+	return res;
 }
 
-#define		MMATRIX_MAP_IJ(mat, expr)						\
-	MMATRIX_WALK_IJ((mat), (mat)(i,j) = (expr);)
+#define		foreach_a_ij(mat, code)									\
+{																	\
+	int _foreach_a_ij_rs = (mat).rows();							\
+	int _foreach_a_ij_cs = (mat).cols();							\
+	for (int i = 0; i < _foreach_a_ij_rs; ++i)						\
+		for (int j = 0; j < _foreach_a_ij_cs; ++j)					\
+			{														\
+				double& a_ij = (mat).operator()(i,j);				\
+				{code;}												\
+			}														\
+}
+
+#define		foreach_a_ij_lower_triangular(mat, code)				\
+{																	\
+	int _foreach_a_ij_rs = (mat).rows();							\
+	int _foreach_a_ij_cs = (mat).cols();							\
+	for (int i = 0; i < _foreach_a_ij_rs; ++i)						\
+		for (int j = 0; j <= i; ++j)								\
+			{														\
+				double& a_ij = (mat).operator()(i,j);				\
+				{code;}												\
+			}														\
+}
+
+#define		foreach_v_i(vec, code)									\
+{																	\
+	int _foreach_v_i_size = (vec).size();							\
+	for (int i = 0; i < _foreach_v_i_size; ++i)						\
+		{															\
+			double& v_i = (vec).operator()(i);						\
+			{code;}													\
+		}															\
+}
 
 #endif	// __MMATRIX_H__

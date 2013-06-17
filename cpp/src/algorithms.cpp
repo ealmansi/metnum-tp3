@@ -19,12 +19,15 @@ using namespace std;
 //	//	gen	//	//
 
 MMatrix compute_mean_row(MMatrix& mat);
+void extended_power_method(MMatrix& A, int k, double delta, MMatrix& V);
+void power_method(MMatrix& A, double delta, MMatrix& v);
+double compute_raleygh_quotient(MMatrix& v, MMatrix& A);
+double norm(MMatrix& m);
 
 MMatrix& normalize_in_place(MMatrix& mat)
 {
 	MMatrix mean_row = compute_mean_row(mat);
-
-	MMATRIX_MAP_IJ(mat, mat(i,j) - mean_row(j));
+	foreach_a_ij(mat, a_ij = a_ij - mean_row(j));
 
 	return mat;
 }
@@ -34,172 +37,42 @@ MMatrix compute_covariance_matrix(MMatrix& mat)
 	normalize_in_place(mat);
 
 	MMatrix cov_mat(mat.cols(),mat.cols());
+	double denominator = 1.0/(mat.rows() - 1);
 
-	MMATRIX_WALK_IJ(cov_mat,{
-		if(i < j) break;
-		cov_mat(i,j) = cov_mat(j,i) = MMatrix::dot_col_col(mat, i, mat, j);
+	foreach_a_ij_lower_triangular(cov_mat,{
+		cov_mat(i,j) = cov_mat(j,i) = (MMatrix::dot_col_col(mat, i, mat, j) * denominator);
 	});
-
-	cov_mat /= (mat.rows() - 1);
 
 	return cov_mat;
 }
 
-double compute_diagonalization_error(MMatrix& mat)
+MMatrix compute_transformation_matrix(MMatrix& A, int num_eigenvectors, double delta, bool verbose)
 {
-	double res = 0;
-	MMATRIX_WALK_IJ(mat,{
-		if(i == j) continue;
-		res += abs(mat(i,j));
-	});
-
-	return res;
-}
-
-void QR_factorization_in_place(MMatrix& Q, MMatrix& A)
-{
-	Q.make_identity_matrix(A.rows());
-	for (int i = 0; i < A.cols(); ++i)
-		for (int j = i+1; j < A.rows(); ++j)
-		{
-			if(abs(A(j,i)) < DBL_TOLERANCE_2_ZERO) continue;
-
-			double x1 = A(i,i), x2 = A(j,i);
-			double r = sqrt(x1 * x1 + x2 * x2);
-			double c = x1 / r, s = x2 / r;
-
-			A(i,i) = r;
-			A(j,i) = 0;
-			for (int k = 0; k < A.cols(); ++k)
-			{
-				double q1 = Q(i,k), q2 = Q(j,k);
-				Q(i,k) = c * q1 + s * q2;
-				Q(j,k) = -s * q1 + c * q2;
-				if( i < k )
-				{
-					double x1 = A(i,k), x2 = A(j,k);
-					A(i,k) = c * x1 + s * x2;
-					A(j,k) = -s * x1 + c * x2;
-				}
-			}
-		}
-
-	Q.t_in_place();
-}
-
-void QR_algorithm_in_place(MMatrix& A, MMatrix& V, double delta, int& iteration_count, bool verbose)
-{
-	MMatrix Q;
-
-	double error = compute_diagonalization_error(A);
-	while( iteration_count < MAX_ITERATIONS && delta < error )
+	MMatrix V(A.rows(), num_eigenvectors);
+	for (int k = 0; k < num_eigenvectors; ++k)
 	{
-		PRINT_ON_VERBOSE("Número de iteración: " + int2str(iteration_count) + ", error: " + double2str(error), verbose);
+		PRINT_ON_VERBOSE("Empezando con el autovector número: " + int2str(k), verbose)
 
-		BEGIN_TIMER();
+		MMatrix v = power_method(A, delta);
+		double lambda = compute_raleygh_quotient(v, A);
+		PRINT_NAMED_EXPR("v_"+int2str(k),v);
+		PRINT_NAMED_EXPR("lambda_"+int2str(k),lambda);
 
-		QR_factorization_in_place(Q,A);
+		/* deflation */
+		foreach_a_ij(A, a_ij = a_ij - lambda * v(i) * v(j) );
 
-		PRINT_ON_VERBOSE("Descomposición QR computada. Tiempo: " + double2str(MSECS_ELAPSED()) + ".", verbose);
-
-		// A *= Q;
-		// V *= Q;
-		/* Multiplicación in situ y simultánea para A y V, a ver si acelera un poco... */
-		int size = A.rows();
-		double aux_row_a[size], aux_row_v[size], aux_row_q[size];
-		for (int i = 0; i < size; ++i)
-		{
-			for (int j = 0; j < size; ++j)
-			{
-				aux_row_a[j] = A.e(i,j);
-				A.e(i,j) = 0;
-				aux_row_v[j] = V.e(i,j);
-				V.e(i,j) = 0;
-			}
-
-			for (int k = 0; k < size; ++k)
-			{
-				for (int j = 0; j < size; ++j)
-				{
-					A.e(i,j) += aux_row_a[k] * Q(k,j);
-					V.e(i,j) += aux_row_v[k] * Q(k,j);
-				}
-			}
-		}
-
-		PRINT_ON_VERBOSE("Fin de iteración. Tiempo: " + double2str(MSECS_ELAPSED()) + ".", verbose);
-
-		error = compute_diagonalization_error(A);
-		iteration_count++;
+		foreach_v_i(v,{
+			V(i,k) = v_i;
+		});
 	}
 
-	if( iteration_count == MAX_ITERATIONS )
-		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED(iteration_count, error, delta));
+	return V;
 }
 
-MMatrix transform_images(MMatrix& images, MMatrix& V)
+MMatrix power_method(MMatrix& A, double delta)
 {
-	return images * V;
-}
-
-MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels)
-{
-	int digits_count[NUM_DIGITS] = {0};
-	MMatrix avgs(NUM_DIGITS, transf_images.cols(), 0.0);
-
-	MMATRIX_WALK_IJ(transf_images,{
-		avgs(labels.at(i), j) += transf_images(i,j);
-		digits_count[labels.at(i)]++;
-	});
-
-	MMATRIX_WALK_IJ(avgs, avgs(i,j) / digits_count[i]);
-
-	return avgs;
-}
-
-MMatrix compute_mean_row(MMatrix& mat)
-{
-	MMatrix mean_row(1, mat.cols(), 0.0);
-	MMATRIX_WALK_IJ(mat, {
-		mean_row(j) += mat(i,j);
-	});
-
-	mean_row /= mat.rows();
-
-	return mean_row;
-}
-
-double norm(MMatrix& m)
-{
-	double acc = 0;
-	MMATRIX_WALK_IJ(m, {
-		acc += m(i,j)*m(i,j);
-	});
-
-	return sqrt(acc);
-}
-
-void extended_power_method(MMatrix& A, int k, double delta, MMatrix& V)
-{
-	V.set_size(A.rows(),k);
-	for (int pc = 0; pc < k; ++pc)
-	{
-		PRINT_ON_VERBOSE("Empezando con el autovector número: " + int2str(pc), true)
-		MMatrix v;
-		power_method(A, delta, v);
-		double lambda = (v.t() * A * v)(0,0);
-
-		MMATRIX_MAP_IJ(A, A(i,j) - lambda * v(i) * v(j) );
-
-		for (int i = 0; i < A.rows(); ++i)
-			V(i,pc) = v(i);
-	}
-}
-
-void power_method(MMatrix& A, double delta, MMatrix& v)
-{
-	v.set_size(A.rows(),1);
-	MMATRIX_MAP_IJ(v, ((double)rand())/RAND_MAX);
+	MMatrix v(A.rows(),1);
+	foreach_v_i(v, v_i = ((double)rand())/RAND_MAX);
 	v /= norm(v);
 
 	int iteration_count;
@@ -209,7 +82,7 @@ void power_method(MMatrix& A, double delta, MMatrix& v)
 		MMatrix y = A * v;
 		y /= norm(y);
 
-		direction_rate_of_change = 1 - abs(MMatrix::dot_col_col(v,0,y,0));
+		direction_rate_of_change = 1 - abs(MMatrix::dot(v,y));
 		if(direction_rate_of_change <= delta) break;
 
 		v = y;
@@ -217,6 +90,64 @@ void power_method(MMatrix& A, double delta, MMatrix& v)
 
 	if(iteration_count == MAX_ITERATIONS)
 		DISPLAY_ERROR_AND_EXIT(CONVERGENCE_NOT_ATTAINED_POWER_MTH(iteration_count, direction_rate_of_change, delta));
+
+	return v;
+}
+
+/* no dimension check, only unary vectors*/
+double compute_raleygh_quotient(MMatrix& v, MMatrix& A)
+{
+	double res = 1;
+	foreach_a_ij(A,{
+		res += a_ij * v(i) * v(j);
+	});
+
+	return res;
+}
+
+/* no dimension check, only vectors*/
+double norm(MMatrix& v)
+{
+	double res = 0;
+	foreach_v_i(v, {
+		res += v_i * v_i;
+	});
+
+	return sqrt(res);
+}
+
+//	//	//	//
+
+MMatrix transform_images(MMatrix& images, MMatrix& V)
+{
+	return images * V;
+}
+
+MMatrix compute_average_by_digit(MMatrix& transf_images, vector<int>& labels)
+{
+	// int digits_count[NUM_DIGITS] = {0};
+	// MMatrix avgs(NUM_DIGITS, transf_images.cols(), 0.0);
+
+	// MMATRIX_WALK_IJ(transf_images,{
+	// 	avgs(labels.at(i), j) += transf_images(i,j);
+	// 	digits_count[labels.at(i)]++;
+	// });
+
+	// MMATRIX_WALK_IJ(avgs, avgs(i,j) / digits_count[i]);
+
+	// return avgs;
+}
+
+MMatrix compute_mean_row(MMatrix& mat)
+{
+	MMatrix mean_row(1, mat.cols(), 0.0);
+	foreach_a_ij(mat, {
+		mean_row(j) += a_ij;
+	});
+
+	mean_row /= mat.rows();
+
+	return mean_row;
 }
 
 //	//	classif	//	//

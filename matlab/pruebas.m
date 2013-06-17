@@ -29,7 +29,7 @@ if( hacer_cuentas )
 	[V, D] = eig(X'*X);
 	[V, D] = sortem(V, D);
 	clear X;
-	clear D;
+	% clear D;
 
 	% % transformo las imagenes
 	% t_train_imgs = train_imgs*V;

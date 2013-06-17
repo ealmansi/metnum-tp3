@@ -22,10 +22,10 @@ clean:
 	@g++ -c -o $@ $<
 
 compile-gen: $(OBJS) $(OBJ-MAIN-GEN)
-	@g++ -o tp3-gen $(OBJS) $(OBJ-MAIN-GEN) $(LIBS) -lrt
+	@g++ -o tp3-gen $(OBJS) $(OBJ-MAIN-GEN) $(LIBS) -lrt -Wall -pedantic -Wextra
 
 compile-classif: $(OBJS) $(OBJ-MAIN-CLASSIF)
-	@g++ -o tp3-classif $(OBJS) $(OBJ-MAIN-CLASSIF) $(LIBS) -lrt
+	@g++ -o tp3-classif $(OBJS) $(OBJ-MAIN-CLASSIF) $(LIBS) -lrt -Wall -pedantic -Wextra
 
 tests: $(OBJS) $(OBJ-MAIN-TESTS)
-	@g++ -o tests $(OBJS) $(OBJ-MAIN-TESTS) $(LIBS) -lrt
+	@g++ -o tests $(OBJS) $(OBJ-MAIN-TESTS) $(LIBS) -lrt -Wall -pedantic -Wextra
