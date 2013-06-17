@@ -44,11 +44,11 @@ int main(int argc, char** argv)
 	{
 		PRINT_ON_VERBOSE("Comenzando a computar los datos para delta = " + double2str(*delta), args.verbose);
 
-	 	MMatrix V = compute_transformation_matrix(cov_mat, 15, *delta, args.verbose);
+	 	MMatrix V = compute_transformation_matrix(cov_mat, 30, *delta, args.verbose);
 
 		PRINT_ON_VERBOSE("Matriz de transformación computada.", args.verbose);
 
-	 	// PRINT_EXPR(V);
+	 	PRINT_EXPR(V);
 
 	 	// MMatrix transf_images = transform_images(images, V);
 
