@@ -11,6 +11,7 @@ using namespace std;
 #define		INVALID_FILE_FORMAT(fn)					("El archivo \"" + fn + "\" no cumple con el formato IDX. Ver http://yann.lecun.com/exdb/mnist/" )
 #define		IMAGES_LABELS_INCONSISTENCY(igs,lbs)	("Los archivos \"" + igs + "\" y \"" + lbs + "\" no contienen la misma cantidad de elementos" )
 #define		FILE_NOT_FOUND(filename)				("El archivo \"" + filename + "\" no existe o se encuentra inutilizable")
+#define		FILE_NOT_CREATED(fn)					("No se pudo crear el archivo: " + fn)
 
 #define		IMAGE_HEIGHT_PXS	28
 #define		IMAGE_WIDTH_PXS		28
@@ -19,6 +20,14 @@ using namespace std;
 #define 	BYTE_ARRAY_2_INT(buff) 		((BYTE_2_INT(buff) << 24) + (BYTE_2_INT(buff+1) << 16) + (BYTE_2_INT(buff+2) << 8)  + (BYTE_2_INT(buff+3) << 0))
 
 #define  	LIMIT	50
+
+#ifdef _WIN64
+	#define		DIRECTORY_SEPARATOR		('\\')
+#elif _WIN32
+	#define		DIRECTORY_SEPARATOR		('\\')
+#elif __linux
+	#define		DIRECTORY_SEPARATOR		('/')
+#endif
 
 void load_ubyte_images(string filename, MMatrix& images)
 {
@@ -208,7 +217,37 @@ void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs)
 	file.close();
 }
 
-void write_results(ofstream& output_file, double delta, int k, int hits)
+string get_file_basename( string const& path )
 {
+    string filename = path.substr( path.find_last_of( DIRECTORY_SEPARATOR ) + 1 );
+    string basename = filename.substr( 0, filename.find_last_of( '.' ) );
 
+    return basename;
+}
+
+void open_output_file(string filename, ofstream& file)
+{
+	file.open(filename.c_str());
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_CREATED(filename));
+
+	file << "% delta, k, archivo de imágenes clasificadas, cantidad de imágenes clasificadas, cantidad de aciertos" << endl;
+	file << get_file_basename(filename) << " = { " << endl;
+}
+
+void write_results(ofstream& file, double delta, int k, string images_filename, int total_images, int hits)
+{
+	file << "\t{";
+	file << delta << ", ";
+	file << k << ", ";
+	file << "'" << images_filename << "', ";
+	file << total_images << ", ";
+	file << hits;
+	file << "}," << endl;
+}
+
+void close_output_file(ofstream& file)
+{
+	file << "};";
+	file.close();
 }

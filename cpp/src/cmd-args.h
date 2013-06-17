@@ -10,6 +10,7 @@ struct CmdArgsGen
 {
 	string images_filename;
 	string labels_filename;
+	int number_of_components;
 	vector<double> delta_values;
 	bool verbose;
 };

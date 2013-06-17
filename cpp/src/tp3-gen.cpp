@@ -45,8 +45,8 @@ int main(int argc, char** argv)
 		PRINT_ON_VERBOSE("Comenzando a computar los datos para delta = " + double2str(*delta) + ".", args.verbose);
 
 		RESET_TIMER();
-	 	MMatrix V = compute_transformation_matrix(cov_mat, 2, *delta, args.verbose);
-		PRINT_ON_VERBOSE("Matriz de transformación computada; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	 	MMatrix V = compute_transformation_matrix(cov_mat, args.number_of_components, *delta, args.verbose);
+		PRINT_ON_VERBOSE("Matriz de transformación computada; cantidad de autovectores: " + int2str(args.number_of_components) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 
 		RESET_TIMER();
 	 	MMatrix transf_images = transform_images(images, V);
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 	 	PRINT_ON_VERBOSE("Datos escritos en el archivo de salida; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
 	}
 
-	PRINT_ON_VERBOSE("Datos computados para todos los valores de delta. Terminando la ejecución...", args.verbose);
+	PRINT_ON_VERBOSE("Datos computados para todos los valores de delta. Terminando la ejecución...\n", args.verbose);
 
 	return 0;
 }

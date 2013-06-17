@@ -30,6 +30,10 @@ CmdArgsGen parse_cmd_args_gen(int argc, char** argv)
 	cmd.add( deltaValuesArg );
 
 	// Define a value argument and add it to the command line.
+	ValueArg<int> prinCompAmountArg("q","cantcomp","Cantidad de componentes principales a computar (default 30).",false,30,"int");
+	cmd.add( prinCompAmountArg );
+
+	// Define a value argument and add it to the command line.
 	ValueArg<string> labelsFilenameArg("l","etiquetas","Archivo de etiquetas de entrenamiento de la base de datos MNIST (formato ubyte); debe ser el correspondiente al archivo de imágenes.",true,"error","archivo");
 	cmd.add( labelsFilenameArg );
 
@@ -44,6 +48,7 @@ CmdArgsGen parse_cmd_args_gen(int argc, char** argv)
 	CmdArgsGen args; 
 	args.images_filename = imagesFilenameArg.getValue();
 	args.labels_filename = labelsFilenameArg.getValue();
+	args.number_of_components = prinCompAmountArg.getValue();
 	args.delta_values = parseDeltaValues(deltaValuesArg.getValue(), deltaExpArg.getValue());
 	if( args.delta_values.empty() )
 	{

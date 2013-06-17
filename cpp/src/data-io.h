@@ -17,6 +17,10 @@ void write_data_file(double delta, MMatrix& V, MMatrix& avgs);
 
 void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs);
 
-void write_results(ofstream& output_file, double delta, int k, int hits);
+void open_output_file(string filename, ofstream& file);
+
+void write_results(ofstream& file, double delta, int k, string images_filename, int total_images, int hits);
+
+void close_output_file(ofstream& file);
 
 #endif //__DATA_IO_H__

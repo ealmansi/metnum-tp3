@@ -184,12 +184,41 @@ MMatrix compute_mean_row(MMatrix& mat)
 	return mean_row;
 }
 
-int classify_image(MMatrix& image_row, MMatrix& V, MMatrix& avgs, int k)
+int classify_image(MMatrix& transf_image, MMatrix& V, MMatrix& avgs, int k)
 {
+	double min_dist = +INFINITY, dist;
+	int digit = -1;
 
+	for (int d = 0; d < NUM_DIGITS; ++d)
+	{
+		MMatrix diff(1, k);
+		foreach_v_i(diff, v_i = transf_image(i) - avgs(d,i));
+
+		dist = norm(diff);
+		if( dist < min_dist )
+		{
+			min_dist = dist;
+			digit = d;
+		}
+	}
+
+	return digit;
 }
 
 int classify_images(MMatrix& images, vector<int>& labels, MMatrix& V, MMatrix& avgs, int k)
 {
+	int hits = 0;
 
+	MMatrix transf_images = transform_images(images, V);
+
+	for (int i = 0; i < transf_images.rows(); ++i)
+	{
+		MMatrix transf_image;
+		transf_images.copy_row(i, transf_image);
+
+		int digit = classify_image(transf_image, V, avgs, k);
+		if(digit == labels.at(i)) ++hits;
+	}
+
+	return hits;
 }
