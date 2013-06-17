@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <vector>
 #include <cstdlib>
 #include <iomanip>
 #include <ctime>

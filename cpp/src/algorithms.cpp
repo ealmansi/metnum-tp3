@@ -12,7 +12,7 @@ using namespace std;
 				("El método de la potencia no convergió después de la máxima cantidad de iteraciones (" + int2str(it) + "). Luego de la última iteración, el cambio en dirección de la estimación era de " + double2str(drch) + ", ante un valor máximo aceptado de: " + double2str(dlt))
 
 #define		MAX_ITERATIONS		10000
-				
+
 #define		NUM_DIGITS			10
 
 //	//	//	//
@@ -50,7 +50,7 @@ MMatrix compute_covariance_matrix(MMatrix& mat)
 	return cov_mat;
 }
 
-MMatrix compute_transformation_matrix(MMatrix& A, int num_eigenvectors, double delta, bool verbose)
+MMatrix compute_transformation_matrix(MMatrix A, int num_eigenvectors, double delta, bool verbose)
 {
 	MMatrix V(A.rows(), num_eigenvectors);
 	vector<double> eigenvalues;
