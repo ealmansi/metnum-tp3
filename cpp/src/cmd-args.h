@@ -8,7 +8,9 @@
 
 struct CmdArgsGen
 {
+	bool compute_cov_mat;
 	string images_filename;
+	string cov_mat_filename;
 	string labels_filename;
 	int number_of_components;
 	vector<double> delta_values;

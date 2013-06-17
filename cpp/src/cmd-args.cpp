@@ -22,6 +22,14 @@ CmdArgsGen parse_cmd_args_gen(int argc, char** argv)
 	cmd.add( verboseSwitch );
 
 	// Define a value argument and add it to the command line.
+	ValueArg<int> prinCompAmountArg("q","cantcomp","Cantidad de componentes principales a computar (default 30).",false,30,"int");
+	cmd.add( prinCompAmountArg );
+
+	// Define a value argument and add it to the command line.
+	ValueArg<string> covmatFilenameArg("c","matcov","Archivo de datos conteniendo la matriz de covarianza de las imágenes de entrenamiento.",false,"error","archivo");
+	cmd.add( covmatFilenameArg );
+
+	// Define a value argument and add it to the command line.
 	ValueArg<int> deltaExpArg("e","deltaexp","Orden de magnitud de los valores del parámetro de la condición de parada para el algoritmo QR (ver argumento \"deltas\").",true,-1,"int");
 	cmd.add( deltaExpArg );
 
@@ -30,23 +38,26 @@ CmdArgsGen parse_cmd_args_gen(int argc, char** argv)
 	cmd.add( deltaValuesArg );
 
 	// Define a value argument and add it to the command line.
-	ValueArg<int> prinCompAmountArg("q","cantcomp","Cantidad de componentes principales a computar (default 30).",false,30,"int");
-	cmd.add( prinCompAmountArg );
-
-	// Define a value argument and add it to the command line.
 	ValueArg<string> labelsFilenameArg("l","etiquetas","Archivo de etiquetas de entrenamiento de la base de datos MNIST (formato ubyte); debe ser el correspondiente al archivo de imágenes.",true,"error","archivo");
 	cmd.add( labelsFilenameArg );
 
 	// Define a value argument and add it to the command line.
-	ValueArg<string> imagesFilenameArg("i","imagenes","Archivo de imágenes de entrenamiento de la base de datos MNIST (formato ubyte).",true,"error","archivo");
+	ValueArg<string> imagesFilenameArg("i","imagenes","Archivo de imágenes de entrenamiento de la base de datos MNIST (formato ubyte). Al utilizarse esta opción, se genera un archivo de datos con la matriz de covarianza computada.",true,"error","archivo");
 	cmd.add( imagesFilenameArg );
 
 	// Parse the args.
 	cmd.parse( argc, argv );
 
 	// Get the value parsed by each arg.
-	CmdArgsGen args; 
+	CmdArgsGen args;
 	args.images_filename = imagesFilenameArg.getValue();
+	if(covmatFilenameArg.isSet())
+	{
+		args.compute_cov_mat = false;
+		args.cov_mat_filename = covmatFilenameArg.getValue();
+	} else {
+		args.compute_cov_mat = true;
+	}
 	args.labels_filename = labelsFilenameArg.getValue();
 	args.number_of_components = prinCompAmountArg.getValue();
 	args.delta_values = parseDeltaValues(deltaValuesArg.getValue(), deltaExpArg.getValue());

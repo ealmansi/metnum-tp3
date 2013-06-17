@@ -7,7 +7,7 @@
 
 MMatrix& normalize_in_place(MMatrix& mat);
 
-MMatrix compute_covariance_matrix(MMatrix& mat);
+void compute_covariance_matrix(MMatrix& mat, MMatrix& cov_mat);
 
 MMatrix compute_transformation_matrix(MMatrix A, int num_eigenvectors, double delta, bool verbose);
 

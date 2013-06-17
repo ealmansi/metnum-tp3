@@ -30,14 +30,30 @@ int main(int argc, char** argv)
 
 	MMatrix images;
 	vector<int> labels;
-	
+	MMatrix cov_mat;
+
 	BEGIN_TIMER();
 	load_mnist_data(args.images_filename, args.labels_filename, images, labels);
-	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ", (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 
-	RESET_TIMER();
-	MMatrix cov_mat = compute_covariance_matrix(images);
-	PRINT_ON_VERBOSE("Matriz de varianza computada; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	if(args.compute_cov_mat)
+	{
+		PRINT_ON_VERBOSE("Comenzando el cómputo de la matriz de covarianza", args.verbose);
+		
+		RESET_TIMER();
+		compute_covariance_matrix(images, cov_mat);
+		PRINT_ON_VERBOSE("Matriz de covarianza computada (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
+
+		RESET_TIMER();
+		string cov_mat_filename = write_covariance_matrix_to_file(args.images_filename, cov_mat);
+		PRINT_ON_VERBOSE("Matriz de covarianza exportada al archivo " + cov_mat_filename + " (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
+
+	} else {
+
+		RESET_TIMER();
+		load_covariance_matrix(args.cov_mat_filename, cov_mat);
+		PRINT_ON_VERBOSE("Matriz de covarianza cargada correctamente (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
+	}
 
 	vector<double>::const_iterator delta;
 	for (delta = args.delta_values.begin(); delta != args.delta_values.end(); ++delta)
@@ -46,19 +62,19 @@ int main(int argc, char** argv)
 
 		RESET_TIMER();
 	 	MMatrix V = compute_transformation_matrix(cov_mat, args.number_of_components, *delta, args.verbose);
-		PRINT_ON_VERBOSE("Matriz de transformación computada; cantidad de autovectores: " + int2str(args.number_of_components) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+		PRINT_ON_VERBOSE("Matriz de transformación computada; cantidad de autovectores: " + int2str(args.number_of_components) + ", (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 
 		RESET_TIMER();
 	 	MMatrix transf_images = transform_images(images, V);
-	 	PRINT_ON_VERBOSE("Imágenes transformadas; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	 	PRINT_ON_VERBOSE("Imágenes transformadas (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 		
 		RESET_TIMER();
 	 	MMatrix avgs = compute_average_by_digit(transf_images, labels);
-	 	PRINT_ON_VERBOSE("Promedios según dígito computados; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	 	PRINT_ON_VERBOSE("Promedios según dígito computados (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 
 	 	RESET_TIMER();
-	 	write_data_file(*delta, V, avgs);
-	 	PRINT_ON_VERBOSE("Datos escritos en el archivo de salida; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	 	string output_data_filename = write_data_file(*delta, V, avgs);
+	 	PRINT_ON_VERBOSE("Datos exportados al archivo " + output_data_filename + " (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 	}
 
 	PRINT_ON_VERBOSE("Datos computados para todos los valores de delta. Terminando la ejecución...\n", args.verbose);

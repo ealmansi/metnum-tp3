@@ -36,18 +36,16 @@ MMatrix normalize_variables(MMatrix& mat)
 	return norm_mat;
 }
 
-MMatrix compute_covariance_matrix(MMatrix& mat)
+void compute_covariance_matrix(MMatrix& mat, MMatrix& cov_mat)
 {
 	MMatrix norm_mat = normalize_variables(mat);
 
-	MMatrix cov_mat(norm_mat.cols(),norm_mat.cols());
+	cov_mat.set_size(norm_mat.cols(),norm_mat.cols());
 	double denominator = 1.0/(norm_mat.rows() - 1);
 
 	foreach_a_ij_lower_triangular(cov_mat,{
 		cov_mat(i,j) = cov_mat(j,i) = (MMatrix::dot_col_col(norm_mat, i, norm_mat, j) * denominator);
 	});
-
-	return cov_mat;
 }
 
 MMatrix compute_transformation_matrix(MMatrix A, int num_eigenvectors, double delta, bool verbose)
@@ -69,7 +67,7 @@ MMatrix compute_transformation_matrix(MMatrix A, int num_eigenvectors, double de
 			V(i,k) = v_i;
 		});
 
-		PRINT_ON_VERBOSE("Autovector número " + int2str(k) + " calculado; tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", verbose)
+		PRINT_ON_VERBOSE("Autovector número " + int2str(k) + " calculado (" + int2str(MSECS_ELAPSED()) + " ms).", verbose)
 	}
 
 	sort_eigenvectors(V, eigenvalues);

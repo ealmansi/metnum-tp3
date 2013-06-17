@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 	
 	BEGIN_TIMER();
 	load_mnist_data(args.images_filename, args.labels_filename, images, labels);
-	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+	PRINT_ON_VERBOSE("Imágenes y etiquetas cargadas correctamente; total de imágenes: " + int2str(images.rows()) + " (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 
 	ofstream output_file;
 	open_output_file(args.output_filename,output_file);
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
 		RESET_TIMER();
 		load_data_file(*data_file, delta, V, avgs);
-		PRINT_ON_VERBOSE("Archivo de datos cargado, delta: " + double2str(delta) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+		PRINT_ON_VERBOSE("Archivo de datos cargado, delta: " + double2str(delta) + " (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 
 		vector<int>::const_iterator k;
 		for (k = args.k_values.begin(); k != args.k_values.end(); ++k)
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
 			RESET_TIMER();
 			int hits = classify_images(images, labels, V, avgs, *k);
-			PRINT_ON_VERBOSE("Clasificaciones acertadas: " + int2str(hits) + ", tiempo (ms):" + int2str(MSECS_ELAPSED()) + ".", args.verbose);
+			PRINT_ON_VERBOSE("Clasificaciones acertadas: " + int2str(hits) + " (" + int2str(MSECS_ELAPSED()) + " ms).", args.verbose);
 			PRINT_ON_VERBOSE("Porcentaje de aciertos: " + double2str(hits*100.0/images.rows()) + "%.", args.verbose);
 
 			write_results(output_file, delta, *k, args.images_filename, images.rows(), hits);

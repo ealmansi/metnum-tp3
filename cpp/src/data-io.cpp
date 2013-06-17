@@ -8,7 +8,7 @@ using namespace std;
 #include "data-io.h"
 #include "mmatrix.h"
 
-#define		INVALID_FILE_FORMAT(fn)					("El archivo \"" + fn + "\" no cumple con el formato IDX. Ver http://yann.lecun.com/exdb/mnist/" )
+#define		INVALID_FILE_FORMAT(fn)					("El formato del archivo " + fn + " es incorrecto" )
 #define		IMAGES_LABELS_INCONSISTENCY(igs,lbs)	("Los archivos \"" + igs + "\" y \"" + lbs + "\" no contienen la misma cantidad de elementos" )
 #define		FILE_NOT_FOUND(filename)				("El archivo \"" + filename + "\" no existe o se encuentra inutilizable")
 #define		FILE_NOT_CREATED(fn)					("No se pudo crear el archivo: " + fn)
@@ -19,7 +19,7 @@ using namespace std;
 #define		BYTE_2_INT(buff)		 	((int)(0xFF & ((unsigned char)*(buff))))
 #define 	BYTE_ARRAY_2_INT(buff) 		((BYTE_2_INT(buff) << 24) + (BYTE_2_INT(buff+1) << 16) + (BYTE_2_INT(buff+2) << 8)  + (BYTE_2_INT(buff+3) << 0))
 
-#define  	LIMIT	50
+#define  	LIMIT	100000
 
 #ifdef _WIN64
 	#define		DIRECTORY_SEPARATOR		('\\')
@@ -28,6 +28,23 @@ using namespace std;
 #elif __linux
 	#define		DIRECTORY_SEPARATOR		('/')
 #endif
+
+#define		BYTE_ARRAY_DOUBLE_LEN		(sizeof(double))
+#define		BYTE_ARRAY_INT_LEN		(sizeof(int))
+
+typedef union {
+    char bytes[BYTE_ARRAY_INT_LEN];
+    int value;
+} ByteArrayIntConverter;
+
+typedef union {
+    char bytes[BYTE_ARRAY_DOUBLE_LEN];
+    double value;
+} ByteArrayDoubleConverter;
+
+string get_file_basename( string const& path );
+
+//	//	//	//
 
 void load_ubyte_images(string filename, MMatrix& images)
 {
@@ -39,23 +56,19 @@ void load_ubyte_images(string filename, MMatrix& images)
 	char buffer[4];
 
 	file.read(buffer, 4);
-	if(!file)
-		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+	if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 	int magic_number = BYTE_ARRAY_2_INT(buffer);
 	
 	file.read(buffer, 4);
-	if(!file)
-		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_images = LIMIT; //BYTE_ARRAY_2_INT(buffer);
+	if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+	int number_of_images = MIN(LIMIT, BYTE_ARRAY_2_INT(buffer));
 	
 	file.read(buffer, 4);
-	if(!file)
-		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+	if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 	int number_of_rows = BYTE_ARRAY_2_INT(buffer);
 	
 	file.read(buffer, 4);
-	if(!file)
-		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+	if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 	int number_of_cols = BYTE_ARRAY_2_INT(buffer);
 	
 	if( number_of_rows != IMAGE_HEIGHT_PXS || number_of_cols != IMAGE_WIDTH_PXS )
@@ -86,14 +99,12 @@ void load_ubyte_labels(string filename, vector<int>& labels)
 	char buffer[4];
 
 	file.read(buffer, 4);
-	if(!file)
-		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+	if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
 	int magic_number = BYTE_ARRAY_2_INT(buffer);
 
 	file.read(buffer, 4);
-	if(!file)
-		DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
-	int number_of_items = LIMIT;//BYTE_ARRAY_2_INT(buffer);
+	if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+	int number_of_items = MIN(LIMIT, BYTE_ARRAY_2_INT(buffer));
 
 	for (int i = 0; i < number_of_items; ++i)
 	{
@@ -109,29 +120,79 @@ void load_ubyte_labels(string filename, vector<int>& labels)
 
 void load_mnist_data(string images_filename, string labels_filename, MMatrix& images, vector<int>& labels)
 {
- 	load_ubyte_images(images_filename, images);
-	load_ubyte_labels(labels_filename, labels);
-	if(images.rows() != labels.size())
-		DISPLAY_ERROR_AND_EXIT(IMAGES_LABELS_INCONSISTENCY(images_filename, labels_filename));
+    load_ubyte_images(images_filename, images);
+    load_ubyte_labels(labels_filename, labels);
+    if(images.rows() != labels.size())
+        DISPLAY_ERROR_AND_EXIT(IMAGES_LABELS_INCONSISTENCY(images_filename, labels_filename));
 }
 
-#define		BYTE_ARRAY_DOUBLE_LEN		(sizeof(double))
-#define		BYTE_ARRAY_INT_LEN		(sizeof(int))
+string write_covariance_matrix_to_file(string images_filename, MMatrix& cov_mat)
+{
+	string filename = get_file_basename(images_filename) + "_covmat.mdat";
+	ofstream file (filename.c_str(), ios::out | ios::binary);
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_CREATED(filename));
 
-typedef union {
-    char bytes[BYTE_ARRAY_INT_LEN];
-    int value;
-} ByteArrayIntConverter;
+	ByteArrayIntConverter int_converter;
+	ByteArrayDoubleConverter double_converter;
 
-typedef union {
-    char bytes[BYTE_ARRAY_DOUBLE_LEN];
-    double value;
-} ByteArrayDoubleConverter;
+    int_converter.value = cov_mat.rows();
+    file.write(int_converter.bytes, BYTE_ARRAY_INT_LEN);
 
-void write_data_file(double delta, MMatrix& V, MMatrix& avgs)
+    int_converter.value = cov_mat.cols();
+    file.write(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+
+    for (int i = 0; i < cov_mat.rows(); ++i)
+    {
+    	for (int j = 0; j < cov_mat.cols(); ++j)
+    	{
+    		double_converter.value = cov_mat(i,j);
+    		file.write(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    	}
+    }
+
+    file.close();
+
+    return filename;
+}
+
+void load_covariance_matrix(string filename, MMatrix& cov_mat)
+{
+	ifstream file (filename.c_str(), ios::in | ios::binary);
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_FOUND(filename));
+
+	ByteArrayIntConverter int_converter;
+	ByteArrayDoubleConverter double_converter;
+
+    file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+    int rows = int_converter.value;
+
+    file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+    int cols = int_converter.value;
+
+    cov_mat.set_size(rows, cols);
+    for (int i = 0; i < rows; ++i)
+    {
+    	for (int j = 0; j < cols; ++j)
+    	{
+    		file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    		if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
+    		cov_mat(i,j) = double_converter.value;
+    	}
+    }
+
+    file.close();
+}
+
+string write_data_file(double delta, MMatrix& V, MMatrix& avgs)
 {
 	string filename = "tp3_data_delta_" + double2str(delta) + ".mdat";
 	ofstream file (filename.c_str(), ios::out | ios::binary);
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_CREATED(filename));
 
 	ByteArrayIntConverter int_converter;
 	ByteArrayDoubleConverter double_converter;
@@ -170,22 +231,29 @@ void write_data_file(double delta, MMatrix& V, MMatrix& avgs)
     }
 
 	file.close();
+
+    return filename;
 }
 
 void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs)
 {
 	ifstream file (filename.c_str(), ios::in | ios::binary);
+	if(!file.is_open())
+		DISPLAY_ERROR_AND_EXIT(FILE_NOT_FOUND(filename));
 
 	ByteArrayIntConverter int_converter;
 	ByteArrayDoubleConverter double_converter;
 
     file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     delta = double_converter.value;
 
     file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     int rows = int_converter.value;
 
     file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     int cols = int_converter.value;
 
     V.set_size(rows, cols);
@@ -194,14 +262,17 @@ void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs)
     	for (int j = 0; j < cols; ++j)
     	{
     		file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    		if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     		V(i,j) = double_converter.value;
     	}
     }
 
     file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     rows = int_converter.value;
 
     file.read(int_converter.bytes, BYTE_ARRAY_INT_LEN);
+    if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     cols = int_converter.value;
 
     avgs.set_size(rows, cols);
@@ -210,19 +281,12 @@ void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs)
     	for (int j = 0; j < cols; ++j)
     	{
     		file.read(double_converter.bytes, BYTE_ARRAY_DOUBLE_LEN);
+    		if(!file) DISPLAY_ERROR_AND_EXIT(INVALID_FILE_FORMAT(filename));
     		avgs(i,j) = double_converter.value;
     	}
     }
 
 	file.close();
-}
-
-string get_file_basename( string const& path )
-{
-    string filename = path.substr( path.find_last_of( DIRECTORY_SEPARATOR ) + 1 );
-    string basename = filename.substr( 0, filename.find_last_of( '.' ) );
-
-    return basename;
 }
 
 void open_output_file(string filename, ofstream& file)
@@ -250,4 +314,12 @@ void close_output_file(ofstream& file)
 {
 	file << "};";
 	file.close();
+}
+
+string get_file_basename( string const& path )
+{
+    string filename = path.substr( path.find_last_of( DIRECTORY_SEPARATOR ) + 1 );
+    string basename = filename.substr( 0, filename.find_last_of( '.' ) );
+
+    return basename;
 }

@@ -13,7 +13,11 @@ void load_ubyte_images(string filename, MMatrix& images);
 
 void load_mnist_data(string images_filename, string labels_filename, MMatrix& images, vector<int>& labels);
 
-void write_data_file(double delta, MMatrix& V, MMatrix& avgs);
+string write_covariance_matrix_to_file(string images_filename, MMatrix& cov_mat);
+
+void load_covariance_matrix(string filename, MMatrix& cov_mat);
+
+string write_data_file(double delta, MMatrix& V, MMatrix& avgs);
 
 void load_data_file(string filename, double& delta, MMatrix& V, MMatrix& avgs);
 
