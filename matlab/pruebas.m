@@ -1,6 +1,6 @@
 hacer_cuentas = true;
-hacer_tests = true;
-hacer_grafico = true;
+hacer_tests = false;
+hacer_grafico = false;
 
 if( hacer_cuentas )
 	% cargo las imágenes
@@ -9,13 +9,8 @@ if( hacer_cuentas )
 
 	% defino conjuntos de entrenamiento y de prueba
 	total_imgs = size(imgg,3);
-	total_imgs = 400
-    
-    train_set = 1:total_imgs; 
-    train_set_size = size(train_set,2);
-	
-    test_set = 1:total_imgs; 
-    test_set_size = size(test_set,2);
+	train_set = 1:total_imgs; train_set_size = size(train_set,2);
+	test_set = 1:total_imgs; test_set_size = size(test_set,2);
 
 	% obtengo los conjuntos y transformo las imagenes a filas
 	train_imgs = images_2_rows(double(imgg(:,:,train_set)));
@@ -28,35 +23,28 @@ if( hacer_cuentas )
 	% genero la matriz X
 	avg_im = mean(train_imgs,1);
 	X = train_imgs - ones(train_set_size,1) * avg_im;
-	X1 = X / sqrt(train_set_size - 1);
+	X = X / sqrt(train_set_size - 1);
 
-    X_prod_Xt_OK = X1'*X1;
-    norm(PROD- prod)
-    
-    
 	% obtengo la matriz de transformación V transpuesta
 	[V, D] = eig(X'*X);
 	[V, D] = sortem(V, D);
-        
-    norm(X - lhs*rhs)
-    
 	clear X;
 	clear D;
 
-	% transformo las imagenes
-	t_train_imgs = train_imgs*V;
+	% % transformo las imagenes
+	% t_train_imgs = train_imgs*V;
 
-	% obtengo el promedio de cada clase en el espacio transformado
-	t_train_imgs_0 = t_train_imgs(train_labels == 0,:); t_avg_0 = mean(t_train_imgs_0,1);
-	t_train_imgs_1 = t_train_imgs(train_labels == 1,:); t_avg_1 = mean(t_train_imgs_1,1);
-	t_train_imgs_2 = t_train_imgs(train_labels == 2,:); t_avg_2 = mean(t_train_imgs_2,1);
-	t_train_imgs_3 = t_train_imgs(train_labels == 3,:); t_avg_3 = mean(t_train_imgs_3,1);
-	t_train_imgs_4 = t_train_imgs(train_labels == 4,:); t_avg_4 = mean(t_train_imgs_4,1);
-	t_train_imgs_5 = t_train_imgs(train_labels == 5,:); t_avg_5 = mean(t_train_imgs_5,1);
-	t_train_imgs_6 = t_train_imgs(train_labels == 6,:); t_avg_6 = mean(t_train_imgs_6,1);
-	t_train_imgs_7 = t_train_imgs(train_labels == 7,:); t_avg_7 = mean(t_train_imgs_7,1);
-	t_train_imgs_8 = t_train_imgs(train_labels == 8,:); t_avg_8 = mean(t_train_imgs_8,1);
-	t_train_imgs_9 = t_train_imgs(train_labels == 9,:); t_avg_9 = mean(t_train_imgs_9,1);
+	% % obtengo el promedio de cada clase en el espacio transformado
+	% t_train_imgs_0 = t_train_imgs(train_labels == 0,:); t_avg_0 = mean(t_train_imgs_0,1);
+	% t_train_imgs_1 = t_train_imgs(train_labels == 1,:); t_avg_1 = mean(t_train_imgs_1,1);
+	% t_train_imgs_2 = t_train_imgs(train_labels == 2,:); t_avg_2 = mean(t_train_imgs_2,1);
+	% t_train_imgs_3 = t_train_imgs(train_labels == 3,:); t_avg_3 = mean(t_train_imgs_3,1);
+	% t_train_imgs_4 = t_train_imgs(train_labels == 4,:); t_avg_4 = mean(t_train_imgs_4,1);
+	% t_train_imgs_5 = t_train_imgs(train_labels == 5,:); t_avg_5 = mean(t_train_imgs_5,1);
+	% t_train_imgs_6 = t_train_imgs(train_labels == 6,:); t_avg_6 = mean(t_train_imgs_6,1);
+	% t_train_imgs_7 = t_train_imgs(train_labels == 7,:); t_avg_7 = mean(t_train_imgs_7,1);
+	% t_train_imgs_8 = t_train_imgs(train_labels == 8,:); t_avg_8 = mean(t_train_imgs_8,1);
+	% t_train_imgs_9 = t_train_imgs(train_labels == 9,:); t_avg_9 = mean(t_train_imgs_9,1);
 
 end
 
