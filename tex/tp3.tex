@@ -63,8 +63,10 @@
     {\textbf{\Large \Fecha}}\\ 
      \vspace{5mm}
    \textbf{\begin{center}\Large Resumen\end{center}}
-   Párrafo de resumen. \\ \vspace{4mm}
-   \textbf{Palabras Clave :} palabra clave 1, palabra clave 2, palabra clave 3, palabra clave 4
+   Se implementó un sistema de reconocimiento óptico de caracteres (OCR, según sus siglas en inglés), basado en el análisis de componentes principales como método de reducción de dimensionalidad.
+   Los datos de entrenamiento y evaluación se tomaron de una base de datos con imágenes bien condicionadas y en escala de grises, conteniendo los dígitos del 0 al 9. La extracción de componentes principales del conjunto de datos se realizó por medio de la descomposición en valores singulares (SVD) de la matriz de covarianza, para lo cual se aproximaron los autovectores de dicha matriz mediante un método basado en el Método de las potencias.
+   Luego, el reconocimiento de nuevas imágenes se realizó mediante su clasificación en el espacio de dimensión reducida determinado por las componentes principales. De especial interés fue el estudio del rendimiento del sistema ante distintas precisiones en el cálculo de autovectores, y la cantidad de componentes utilizada para la clasificación.     \\ \vspace{4mm}
+   \textbf{Términos Clave :} OCR, SVD, reducción de la dimensión, Método de las potencias
 
    \vspace{10mm}
     \textbf{\tablaints}
