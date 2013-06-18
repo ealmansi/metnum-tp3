@@ -1,0 +1,14 @@
+\subsection{OCR y reducción de dimensionalidad}
+
+El reconocimiento óptico de caracteres (\emph{Optical Character Regonition}) es la interpretación automatizada de texto en formato de imágen, y la conversión mecánica de texto manuscrito o impreso a versión digital. Una variante más restringida del problema se enfoca en el reconocimiento de dígitos manuscritos, siendo ese el foco de este trabajo.
+
+El enfoque utilizado para resolver el problema consiste, en primer lugar, en considerar a cada imagen de un dígito como una instancia de observación sobre \N variables, donde \N es la cantidad de píxeles que la componen. De esta forma, un conjunto de \M imágenes se puede interpretar como un conjunto de datos con \M muestras sobre \N variables.
+
+Por ejemplo, si se tiene un conjunto de imágenes de tamaño $\n * \n = \N$ en escala de grises de 8 bits, se considera a cada píxel como una variable que toma valores entre 0 y 255, y cada una de las imágenes será una muestra con una observación para cada una de las \N variables.
+
+Ahora bien, bajo esta interpretación, es evidente que no todas las variables tienen la misma relevancia a la hora de diferenciar una muestra de la otra; aquellos píxeles que no pertenezcan a la forma habitual de ninguno de los diez dígitos, tendrán valores similares o idénticos en todas las muestras. Por el contrario, algunos píxeles se activarán para ciertos dígitos y no para los demás (o lo que es igual, esas variables tomarán valores distintos en las muestras de unos u otros  dígitos), permitiendo caracterizar y distinguir distintas clases dentro de las observaciones.
+
+El análisis de componentes principales formaliza este concepto, permitiendo hallar una representación de los datos donde las distintas variables se organizan jerárquicamente según su relevancia. En concreto, permite hallar un sistema de coordenadas ortogonales formadas por combinaciones lineales de las originales, de forma tal que al ver los datos en este sistema, las nuevas variables (que ya no serán píxeles individuales, sino características comprendiendo a varios de ellos) queden ordenadas según la magnitud de sus varianzas.
+
+
+
