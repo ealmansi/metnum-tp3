@@ -8,7 +8,24 @@ Por ejemplo, si se tiene un conjunto de imágenes de tamaño $\n * \n = \N$ en e
 
 Ahora bien, bajo esta interpretación, es evidente que no todas las variables tienen la misma relevancia a la hora de diferenciar una muestra de la otra; aquellos píxeles que no pertenezcan a la forma habitual de ninguno de los diez dígitos, tendrán valores similares o idénticos en todas las muestras. Por el contrario, algunos píxeles se activarán para ciertos dígitos y no para los demás (o lo que es igual, esas variables tomarán valores distintos en las muestras de unos u otros  dígitos), permitiendo caracterizar y distinguir distintas clases dentro de las observaciones.
 
-El análisis de componentes principales formaliza este concepto, permitiendo hallar una representación de los datos donde las distintas variables se organizan jerárquicamente según su relevancia. En concreto, permite hallar un sistema de coordenadas ortogonales formadas por combinaciones lineales de las originales, de forma tal que al ver los datos en este sistema, las nuevas variables (que ya no serán píxeles individuales, sino características comprendiendo a varios de ellos) queden ordenadas según la magnitud de sus varianzas.
+El análisis de componentes principales extiende este concepto, permitiendo hallar una representación de los datos donde las distintas variables se organizan jerárquicamente según su relevancia. En concreto, permite hallar un sistema de coordenadas ortogonales formadas por combinaciones lineales de las originales, de forma tal que al ver los datos en este sistema, las nuevas variables (que ya no serán píxeles individuales, sino características comprendiendo a varios de ellos) queden ordenadas según la magnitud de sus varianzas. Los ejes de este sistema son lo que se conoce como \emph{componentes principales}.
 
+Adicionalmente, es habitual hallar en datos reales con cierto grado de redundancia en su contenido, que la mayor parte de la varianza total del sistema se concentra en unas pocas componentes principales; esto permite descartar aquellas menos relevantes, reduciendo la dimensión de los datos con mínima pérdida de información, y exponiendo sus características más significativas.
 
+\subsection{Descomposición SVD y relación con las componentes principales}
 
+La descomposición en valores singulares (\emph{Singular Value Decomposition}) de una matriz \decMat{\X}{\M}{\N} esta compuesta por matrices \decMat{\U}{\M}{\M}, \decMat{\Sig}{\M}{\N} y \decMat{\V}{\N}{\N} cumpliendo:
+
+$$\X = \U \Sig \V^{t}$$
+
+donde \U y \V son ortogonales, \Sig es diagonal, y sus elementos $\sigma_i$ son no negativos y se encuentran ordenados decrecientemente.
+
+Esta descomposición es útil en este caso ya que, de la teoría de del análisis de componentes principales, se desprende que el cambio de coordenadas entre el sistema original de los datos y el de sus componentes principales queda determinado por la matriz $\V^{t}$ de la descomposición en valores singulares de la matriz de covarianza de los datos.
+
+En particular, como la matriz de covarianza es simétrica y semi-definida positiva por construcción \footnote{Si $A$ es la matriz de datos, $\A^{t} * \A = (\A^{t} * \A)^{t}$ y $\forall x \neq 0$, $x^t * A^t * A * x = \left \| A*x \right \|_2 \geq 0$}, también es diagonalizable y su descomposición SVD se puede tomar de forma equivalente a su descomposición $PDP^{-1}$.\footnote{Esta es la descomposición obtenida al diagonalizar la matriz.}
+
+Por lo tanto, para obtener $\V^{t}$ es necesario calcular los autovectores de la matriz de covarianza de los datos.
+
+\subsection{Método de las potencias y deflación}
+
+...

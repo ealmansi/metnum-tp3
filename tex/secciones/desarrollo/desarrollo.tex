@@ -1,0 +1,25 @@
+\subsection{Base de datos MNIST}
+
+de dónde sacamos las imagenes
+como se conforma la base de datos (training set 60k, test set 10k, con labels)
+características de las imágenes (centradas, sin ruido, en blanco y negro, de 48*48)
+
+\subsection{Aplicabilidad del Método de las potencias}
+
+el método viene al pelo porque:
+	- es rápido comparado con QR
+	- necesitamos solo algunos autovectores (no todos) y siempre los de mayor autovalor (en valor absoluto)
+	- si bien el error se propaga (porque la deflación usa el autovalor que acabás de calcular), no necesitamos que sea super exacto porque la degradación del rendimiento debería ser parsimoniosa respecto a la degradación en la precisión [si moves un poco las componentes principales la clasificación no puede cambiar TAANTO, no?]
+
+\subsubsection{Criterio de parada}
+
+si el producto interno entre dos aproximaciones sucesivas es muy chiquito, entonces la aproximación no cambió mucho de dirección y decimos que "convergió"
+
+\subsection{Cantidad de componentes principales computadas}
+
+Calculamos solo hasta 350 autovectores porque más del 99\% de la varianza queda comprendida ahí [hice la cuenta en matlab, sum(autovalores(1:350)) / sum(autovalores) > 0.99], y encima el método de las potencias se vuelve cada vez más lento
+
+\subsection{Experimentación y criterio de clasificación}
+
+cómo funciona todo una vez que ya tenes computado todo
+cómo decidís a que clase pertenece una foto nueva -> (la transformás y comparás contra el promedio de las transformadas de cada dígito y te quedás con el más cercano en norma 2)
