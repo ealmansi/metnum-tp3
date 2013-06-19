@@ -25,7 +25,8 @@ Esta descomposición es útil en este caso ya que, de la teoría de del análisi
 
 En particular, como la matriz de covarianza es simétrica y semi-definida positiva por construcción \footnote{Si $A$ es la matriz de datos, $\A^{t} * \A = (\A^{t} * \A)^{t}$ y $\forall x \neq 0$, $x^t * A^t * A * x = \left \| A*x \right \|_2 \geq 0$}, también es diagonalizable y su descomposición SVD se puede tomar de forma equivalente a su descomposición $PDP^{-1}$.\footnote{Esta es la descomposición obtenida al diagonalizar la matriz.}
 
-Por lo tanto, para obtener $\V^{t}$ es necesario calcular los autovectores de la matriz de covarianza de los datos.
+Por lo tanto, para obtener $\V^{t}$ es necesario calcular los autovectores de la matriz de covarianza de los datos. Sin embargo, si se quiere eliminar componentes que aporten poca información, reduciendo la dimensión de los datos a sus primeras $k$ componentes principales, es suficiente computar únicamente los $k$ autovectores dominantes; es decir, aquellos cuyos autovalores sean mayores en módulo.
+
 
 \subsection{Método de las potencias y deflación}
 

@@ -20,12 +20,18 @@ donde $\delt \in \left ( 0, 1 \right )$ es el parámetro de la implementacion qu
 
 Dado que ambos vectores son unitarios por construcción, el valor absoluto de su producto interno es $\leq 1$ \footnote{Por la desigualdad de Cauchy–Schwarz-Bunyakovsky}, y será más cercano a $1$ cuando la dirección de $v_{i-1}$ y de $v_{i}$ sean más próximas entre sí. De esta forma, cuanto mayor sea \delt, más restrictiva será la condición, requiriendo que los vectores sean colineales para $\delt = 1$. Esto significa que se terminará el proceso iterativo cuando sucesivas aproximaciones no perciban grandes variaciones en su dirección.
 
-\subsection{Cantidad de componentes principales computadas}
+\subsection{Dimensión del espacio de llegada de la transformación}
 
-Para determinar la cantidad de dimensiones apropiada 
-Calculamos solo hasta 350 autovectores porque más del 99\% de la varianza queda comprendida ahí [hice la cuenta en matlab, sum(autovalores(1:350)) / sum(autovalores) > 0.99], y encima el método de las potencias se vuelve cada vez más lento
+Para determinar la cantidad de dimensiones apropiada para la transformación, se buscó un balance entre velocidad de ejecución y rendimiento. Por un lado, el cálculo de autovectores por medio del Método de las potencias se vuelve más lento cada vez que se realiza una iteración, ya que los autovalores difieren menos significativamente para componentes de menor relevancia. Por otro lado, si se descartan demasiadas dimensiones, inevitablemente se perderá cierto grado de información y es esperable que la calidad del reconocimiento decremente.
 
-\subsection{Experimentación y criterio de clasificación}
+Para determinar un criterio, se determinó para cuál cantidad de componentes principales se acumula más del $99\%$ de la varianza de los datos. Realizando el cociente entre la varianza acumulada en las primeras 350 componentes y la varianza total, se observa una proporción mayor a 0.99, por lo cual todos los experimentos para determinar la influencia de la dimensión en el rendimiento se realizaron con valores de $k$ entre 1 y 350.
 
-cómo funciona todo una vez que ya tenes computado todo
-cómo decidís a que clase pertenece una foto nueva -> (la transformás y comparás contra el promedio de las transformadas de cada dígito y te quedás con el más cercano en norma 2)
+\subsection{Criterio de clasificación y experimentación}
+
+Una vez obtenida la matriz de transformación, el mecanismo de clasificación se realizó de la siguiente manera.
+
+En primer lugar, se transformó todo el conjunto de entrenamiento, y se computó el promedio de las imágenes transformadas de cada dígito. De esta forma, se obtiene un representante de cada clase en el espacio de llegada de la transformación.
+
+Luego, el reconocimiento de una imagen desconocida se realiza simplemente aplicando la transformación sobre la nueva observación, y verificando a cuál representante resulta más cercano el nuevo dato según la norma euclídea. El dígito representado por el promedio más próximo se declara como el más probable para la imagen que se quiere reconocer.
+
+Finalmente, una vez implementado el sistema, se experimentó sobre el parámetro de precisión \delt y la cantidad de componentes principales utilizadas al representar los datos (valor de $k$). Para determinar la influencia de estos parámetros sobre el rendimiento, se ejecutó el proceso de reconocimiento sobre todo el conjunto de imágenes de prueba de la base de datos para varias combinaciones de \delt y $k$, midiendo la cantidad de instancias clasificadas correctamente en cada caso según las etiquetas provistas.
