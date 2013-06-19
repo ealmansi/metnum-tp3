@@ -1,22 +1,28 @@
 \subsection{Base de datos MNIST}
 
-de dónde sacamos las imagenes
-como se conforma la base de datos (training set 60k, test set 10k, con labels)
-características de las imágenes (centradas, sin ruido, en blanco y negro, de 48*48)
+Para implementar y poner a prueba el sistema se utilizó la base de datos MNIST de dígitos manuscritos\footnote{Se puede obtener desde el sitio http://yann.lecun.com/exdb/mnist/.}. Esta consta de un conjunto de entrenamiento y un conjunto de prueba de 60.000 y 10.000 imágenes, respectivamente. Cada una de ellas viene apareada con una etiquetada indicando el dígito que contiene.
+
+Las imágenes tienen un tamaño estandarizado de $28 \times 28$ píxeles, se encuentran libres de ruido, debidamente centradas, y tienen un formato color en escala de grises de 8 bits. Estas características permiten enfocar el estudio en el reconocimiento de los dígitos, sin tener que realizar preprocesamiento y condicionamiento de las imágenes, lo cual suele ser una etapa relevante en el problema de OCR.
+
+Según el enfoque propuesto en la sección \ref{intro:ocr}, el conjunto de entrenamiento se puede considerar como una matriz de datos \decMat{\X}{\M}{\N} donde $\M = 60000$ y $\N = 28 * 28 = 784$. De esta forma, la matriz de covarianza será \decMat{\frac{1}{\N - 1} \X^t \X}{\N}{\N}.
 
 \subsection{Aplicabilidad del Método de las potencias}
 
-el método viene al pelo porque:
-	- es rápido comparado con QR
-	- necesitamos solo algunos autovectores (no todos) y siempre los de mayor autovalor (en valor absoluto)
-	- si bien el error se propaga (porque la deflación usa el autovalor que acabás de calcular), no necesitamos que sea super exacto porque la degradación del rendimiento debería ser parsimoniosa respecto a la degradación en la precisión [si moves un poco las componentes principales la clasificación no puede cambiar TAANTO, no?]
+Para utilizar el Método de las potencias combinado con deflación fue necesario verificar primero que se cumplieran las hipótesis sobre las cuales se basan. Por un lado, la matriz de covarianza es simétrica por construcción, por lo cual sus autovectores serán necesariamente ortogonales y por lo tanto el proceso de deflación funciona correctamente. Por otro lado, la condición de que los autovalores fueran distintos en módulo no se pudo demostrar de forma teórica ya que es posible generar un conjunto de datos donde esto no se cumpla. Sin embargo, se corroboró empíricamente que esta condición efectivamente se verifica en el rango de autovalores de mayor valor absoluto, que son los de interés para esta aplicación (en contraposición a las direcciones principales de menor relevancia, las cuales se encuentran asociadas a autovalores muy similares y cercanos a cero).
+
+Las características del método lo hicieron particularmente apto para esta aplicación, ya que solo fue necesario computar un subconjunto de autovectores dominantes de la matriz de covarianza. Por esta razón, fue posible aplicar el método tantas veces como componentes principales se desearan, intercalando el proceso de deflación entre distintas iteraciones. Este esquema es inherentemente más eficiente que otros métodos para calcular todos los autovectores de la matriz de forma simultánea, como el algoritmo QR en su versión ordinaria.
 
 \subsubsection{Criterio de parada}
 
-si el producto interno entre dos aproximaciones sucesivas es muy chiquito, entonces la aproximación no cambió mucho de dirección y decimos que "convergió"
+Si llamamos $v_i$ con $i = 0, 1, 2 ...$ a la aproximación generada por la i-ésima iteración, el criterio se parada consiste en considerar que el algoritmo ha convergido cuando se cumple:
+$$ 1\, - \left | <v_{i-1}, v_{i}> \right | \, \leq \delta $$
+donde $\delt \in \left ( 0, 1 \right )$ es el parámetro de la implementacion que determina la precisión en el cálculo de los autovectores.
+
+Dado que ambos vectores son unitarios por construcción, el valor absoluto de su producto interno es $\leq 1$ \footnote{Por la desigualdad de Cauchy–Schwarz-Bunyakovsky}, y será más cercano a $1$ cuando la dirección de $v_{i-1}$ y de $v_{i}$ sean más próximas entre sí. De esta forma, cuanto mayor sea \delt, más restrictiva será la condición, requiriendo que los vectores sean colineales para $\delt = 1$. Esto significa que se terminará el proceso iterativo cuando sucesivas aproximaciones no perciban grandes variaciones en su dirección.
 
 \subsection{Cantidad de componentes principales computadas}
 
+Para determinar la cantidad de dimensiones apropiada 
 Calculamos solo hasta 350 autovectores porque más del 99\% de la varianza queda comprendida ahí [hice la cuenta en matlab, sum(autovalores(1:350)) / sum(autovalores) > 0.99], y encima el método de las potencias se vuelve cada vez más lento
 
 \subsection{Experimentación y criterio de clasificación}
