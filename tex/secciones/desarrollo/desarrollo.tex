@@ -18,7 +18,7 @@ Si llamamos $v_i$ con $i = 0, 1, 2 ...$ a la aproximación generada por la i-és
 $$ 1\, - \left | <v_{i-1}, v_{i}> \right | \, \leq \delta $$
 donde $\delt \in \left ( 0, 1 \right )$ es el parámetro de la implementacion que determina la precisión en el cálculo de los autovectores.
 
-Dado que ambos vectores son unitarios por construcción, el valor absoluto de su producto interno es $\leq 1$ \footnote{Por la desigualdad de Cauchy–Schwarz-Bunyakovsky}, y será más cercano a $1$ cuando la dirección de $v_{i-1}$ y de $v_{i}$ sean más próximas entre sí. De esta forma, cuanto mayor sea \delt, más restrictiva será la condición, requiriendo que los vectores sean colineales para $\delt = 1$. Esto significa que se terminará el proceso iterativo cuando sucesivas aproximaciones no perciban grandes variaciones en su dirección.
+Dado que ambos vectores son unitarios por construcción, el valor absoluto de su producto interno es $\leq 1$ \footnote{Por la desigualdad de Cauchy–Schwarz-Bunyakovsky}, y será más cercano a $1$ cuando la dirección de $v_{i-1}$ y de $v_{i}$ sean más próximas entre sí. De esta forma, cuanto menor sea \delt, más restrictiva será la condición, requiriendo que los vectores sean colineales para $\delt = 0$. Esto significa que se terminará el proceso iterativo cuando sucesivas aproximaciones no perciban grandes variaciones en su dirección.
 
 \subsection{Dimensión del espacio de llegada de la transformación}
 
