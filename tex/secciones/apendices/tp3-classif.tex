@@ -1,0 +1,75 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}fstream\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}iostream\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}vector\PYZgt{}}
+\PY{k}{using} \PY{k}{namespace} \PY{n}{std}\PY{p}{;}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "..}\PY{c+cp}{/}\PY{c+cp}{lib}\PY{c+cp}{/}\PY{c+cp}{commons.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "cmd-args.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "mmatrix.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "data-io.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "algorithms.h"}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define		NOT\PYZus{}ENOUGH\PYZus{}PRINC\PYZus{}COMPONENTS(amnt,k)		\PYZbs{}}
+\PY{c+cp}{				("El archivo de datos solo contiene información sobre las primeras " + int2str(amnt) + " componentes principales, por lo que no se puede realizar la clasificación con un valor de k: " + int2str(k))}
+
+\PY{c+cm}{/*}
+\PY{c+cm}{- programa clasificador [recibe: test set image/label files, k's, archivos-binarios-de-datos | devuelve: archivo de resultados]}
+\PY{c+cm}{	- parsea los archivos tipo ubyte de mnist, cargando las fotos en una matriz y las labels en un vector}
+\PY{c+cm}{	- genero archivo de resultados}
+\PY{c+cm}{	- para cada archivo-binario-de-datos}
+\PY{c+cm}{		- cargo V y el promedio de cada clase (o dígito)}
+\PY{c+cm}{		- para cada k}
+\PY{c+cm}{			- clasifico todas las imágenes, comparando contra los promedios}
+\PY{c+cm}{			- cuento los aciertos}
+\PY{c+cm}{			- anoto resultados en el archivo de resultados}
+\PY{c+cm}{*/}
+
+\PY{k+kt}{int} \PY{n}{main}\PY{p}{(}\PY{k+kt}{int} \PY{n}{argc}\PY{p}{,} \PY{k+kt}{char}\PY{o}{*}\PY{o}{*} \PY{n}{argv}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{CmdArgsClassif} \PY{n}{args} \PY{o}{=} \PY{n}{parse\PYZus{}cmd\PYZus{}args\PYZus{}classif}\PY{p}{(}\PY{n}{argc}\PY{p}{,} \PY{n}{argv}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{MMatrix} \PY{n}{images}\PY{p}{;}
+	\PY{n}{vector}\PY{o}{\PYZlt{}}\PY{k+kt}{int}\PY{o}{\PYZgt{}} \PY{n}{labels}\PY{p}{;}
+	
+	\PY{n}{BEGIN\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	\PY{n}{load\PYZus{}mnist\PYZus{}data}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{labels\PYZus{}filename}\PY{p}{,} \PY{n}{images}\PY{p}{,} \PY{n}{labels}\PY{p}{)}\PY{p}{;}
+	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Imágenes y etiquetas cargadas correctamente; total de imágenes: }\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{images}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{ofstream} \PY{n}{output\PYZus{}file}\PY{p}{;}
+	\PY{n}{open\PYZus{}output\PYZus{}file}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{output\PYZus{}filename}\PY{p}{,}\PY{n}{output\PYZus{}file}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{MMatrix} \PY{n}{V}\PY{p}{,} \PY{n}{avgs}\PY{p}{;}
+	\PY{n}{vector}\PY{o}{\PYZlt{}}\PY{n}{string}\PY{o}{\PYZgt{}}\PY{o}{:}\PY{o}{:}\PY{n}{const\PYZus{}iterator} \PY{n}{data\PYZus{}file}\PY{p}{;}
+	\PY{k}{for} \PY{p}{(}\PY{n}{data\PYZus{}file} \PY{o}{=} \PY{n}{args}\PY{p}{.}\PY{n}{data\PYZus{}files}\PY{p}{.}\PY{n}{begin}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{n}{data\PYZus{}file} \PY{o}{!}\PY{o}{=} \PY{n}{args}\PY{p}{.}\PY{n}{data\PYZus{}files}\PY{p}{.}\PY{n}{end}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{data\PYZus{}file}\PY{p}{)}
+	\PY{p}{\PYZob{}}
+		\PY{k+kt}{double} \PY{n}{delta}\PY{p}{;}
+
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+		\PY{n}{load\PYZus{}data\PYZus{}file}\PY{p}{(}\PY{o}{*}\PY{n}{data\PYZus{}file}\PY{p}{,} \PY{n}{delta}\PY{p}{,} \PY{n}{V}\PY{p}{,} \PY{n}{avgs}\PY{p}{)}\PY{p}{;}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Archivo de datos cargado, delta: }\PY{l+s}{"} \PY{o}{+} \PY{n}{double2str}\PY{p}{(}\PY{n}{delta}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+		\PY{n}{vector}\PY{o}{\PYZlt{}}\PY{k+kt}{int}\PY{o}{\PYZgt{}}\PY{o}{:}\PY{o}{:}\PY{n}{const\PYZus{}iterator} \PY{n}{k}\PY{p}{;}
+		\PY{k}{for} \PY{p}{(}\PY{n}{k} \PY{o}{=} \PY{n}{args}\PY{p}{.}\PY{n}{k\PYZus{}values}\PY{p}{.}\PY{n}{begin}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{n}{k} \PY{o}{!}\PY{o}{=} \PY{n}{args}\PY{p}{.}\PY{n}{k\PYZus{}values}\PY{p}{.}\PY{n}{end}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{k}\PY{p}{)}
+		\PY{p}{\PYZob{}}
+			\PY{k}{if}\PY{p}{(}\PY{n}{V}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)} \PY{o}{\PYZlt{}} \PY{o}{*}\PY{n}{k}\PY{p}{)}
+				\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{NOT\PYZus{}ENOUGH\PYZus{}PRINC\PYZus{}COMPONENTS}\PY{p}{(}\PY{n}{V}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{o}{*}\PY{n}{k}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+			\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Realizando clasificación con k: }\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{o}{*}\PY{n}{k}\PY{p}{)}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+			\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+			\PY{k+kt}{int} \PY{n}{hits} \PY{o}{=} \PY{n}{classify\PYZus{}images}\PY{p}{(}\PY{n}{images}\PY{p}{,} \PY{n}{labels}\PY{p}{,} \PY{n}{V}\PY{p}{,} \PY{n}{avgs}\PY{p}{,} \PY{o}{*}\PY{n}{k}\PY{p}{)}\PY{p}{;}
+			\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Clasificaciones acertadas: }\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{hits}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+			\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Porcentaje de aciertos: }\PY{l+s}{"} \PY{o}{+} \PY{n}{double2str}\PY{p}{(}\PY{n}{hits}\PY{o}{*}\PY{l+m+mf}{100.0}\PY{o}{/}\PY{n}{images}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{\PYZpc{}.}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+			\PY{n}{write\PYZus{}results}\PY{p}{(}\PY{n}{output\PYZus{}file}\PY{p}{,} \PY{n}{delta}\PY{p}{,} \PY{o}{*}\PY{n}{k}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{images}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{hits}\PY{p}{)}\PY{p}{;}
+		\PY{p}{\PYZcb{}}
+	\PY{p}{\PYZcb{}}
+
+	\PY{n}{close\PYZus{}output\PYZus{}file}\PY{p}{(}\PY{n}{output\PYZus{}file}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Clasificación realizada para todos los archivos de datos y valores de k. Terminando la ejecución...}\PY{l+s+se}{\PYZbs{}n}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{l+m+mi}{0}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+\end{Verbatim}

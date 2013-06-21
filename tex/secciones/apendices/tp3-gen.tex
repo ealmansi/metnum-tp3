@@ -1,0 +1,85 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}algorithm\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}iostream\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}vector\PYZgt{}}
+\PY{k}{using} \PY{k}{namespace} \PY{n}{std}\PY{p}{;}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "..}\PY{c+cp}{/}\PY{c+cp}{lib}\PY{c+cp}{/}\PY{c+cp}{commons.h"}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "cmd-args.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "mmatrix.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "data-io.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "algorithms.h"}
+
+\PY{c+cm}{/*}
+\PY{c+cm}{* - programa generador [recibe: training set image/label files, delta's | devuelve: archivos-binarios-de-datos (uno por cada delta)]}
+\PY{c+cm}{* 	- parsea el archivo tipo ubyte de mnist, cargando las fotos en una matriz}
+\PY{c+cm}{* 	- genera la matriz 'X', y computa 'Y' = Xt * X}
+\PY{c+cm}{* 	- para cada delta}
+\PY{c+cm}{* 		- computa los autovectores/autovalores de 'Y' (algoritmo QR)}
+\PY{c+cm}{* 		- ordena los autovectores segun orden decreciente de abs(autovalor) -\PYZgt{} matriz V}
+\PY{c+cm}{* 		- transformo las imagenes usando V}
+\PY{c+cm}{* 		- computo el promedio de cada clase (o dígito)}
+\PY{c+cm}{* 		- guarda en un archivo binario a la matriz V y los promedios}
+\PY{c+cm}{*/}
+
+\PY{k+kt}{int} \PY{n}{main}\PY{p}{(}\PY{k+kt}{int} \PY{n}{argc}\PY{p}{,} \PY{k+kt}{char}\PY{o}{*}\PY{o}{*} \PY{n}{argv}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{CmdArgsGen} \PY{n}{args} \PY{o}{=} \PY{n}{parse\PYZus{}cmd\PYZus{}args\PYZus{}gen}\PY{p}{(}\PY{n}{argc}\PY{p}{,} \PY{n}{argv}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Comenzando ejecución del programa.}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{MMatrix} \PY{n}{images}\PY{p}{;}
+	\PY{n}{vector}\PY{o}{\PYZlt{}}\PY{k+kt}{int}\PY{o}{\PYZgt{}} \PY{n}{labels}\PY{p}{;}
+	\PY{n}{MMatrix} \PY{n}{cov\PYZus{}mat}\PY{p}{;}
+
+	\PY{n}{BEGIN\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	\PY{n}{load\PYZus{}mnist\PYZus{}data}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{labels\PYZus{}filename}\PY{p}{,} \PY{n}{images}\PY{p}{,} \PY{n}{labels}\PY{p}{)}\PY{p}{;}
+	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Imágenes y etiquetas cargadas correctamente; total de imágenes: }\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{images}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{, (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{if}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{compute\PYZus{}cov\PYZus{}mat}\PY{p}{)}
+	\PY{p}{\PYZob{}}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Comenzando el cómputo de la matriz de covarianza}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+		
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+		\PY{n}{compute\PYZus{}covariance\PYZus{}matrix}\PY{p}{(}\PY{n}{images}\PY{p}{,} \PY{n}{cov\PYZus{}mat}\PY{p}{)}\PY{p}{;}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Matriz de covarianza computada (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+		\PY{n}{string} \PY{n}{cov\PYZus{}mat\PYZus{}filename} \PY{o}{=} \PY{n}{write\PYZus{}covariance\PYZus{}matrix\PYZus{}to\PYZus{}file}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{cov\PYZus{}mat}\PY{p}{)}\PY{p}{;}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Matriz de covarianza exportada al archivo }\PY{l+s}{"} \PY{o}{+} \PY{n}{cov\PYZus{}mat\PYZus{}filename} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	\PY{p}{\PYZcb{}} \PY{k}{else} \PY{p}{\PYZob{}}
+
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+		\PY{n}{load\PYZus{}covariance\PYZus{}matrix}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{cov\PYZus{}mat\PYZus{}filename}\PY{p}{,} \PY{n}{cov\PYZus{}mat}\PY{p}{)}\PY{p}{;}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Matriz de covarianza cargada correctamente (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+	\PY{p}{\PYZcb{}}
+
+	\PY{n}{vector}\PY{o}{\PYZlt{}}\PY{k+kt}{double}\PY{o}{\PYZgt{}}\PY{o}{:}\PY{o}{:}\PY{n}{const\PYZus{}iterator} \PY{n}{delta}\PY{p}{;}
+	\PY{k}{for} \PY{p}{(}\PY{n}{delta} \PY{o}{=} \PY{n}{args}\PY{p}{.}\PY{n}{delta\PYZus{}values}\PY{p}{.}\PY{n}{begin}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{n}{delta} \PY{o}{!}\PY{o}{=} \PY{n}{args}\PY{p}{.}\PY{n}{delta\PYZus{}values}\PY{p}{.}\PY{n}{end}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{delta}\PY{p}{)}
+	\PY{p}{\PYZob{}}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Comenzando a computar los datos para delta = }\PY{l+s}{"} \PY{o}{+} \PY{n}{double2str}\PY{p}{(}\PY{o}{*}\PY{n}{delta}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{.}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{MMatrix} \PY{n}{V} \PY{o}{=} \PY{n}{compute\PYZus{}transformation\PYZus{}matrix}\PY{p}{(}\PY{n}{cov\PYZus{}mat}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{number\PYZus{}of\PYZus{}components}\PY{p}{,} \PY{o}{*}\PY{n}{delta}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+		\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Matriz de transformación computada; cantidad de autovectores: }\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{args}\PY{p}{.}\PY{n}{number\PYZus{}of\PYZus{}components}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{, (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{MMatrix} \PY{n}{transf\PYZus{}images} \PY{o}{=} \PY{n}{transform\PYZus{}images}\PY{p}{(}\PY{n}{images}\PY{p}{,} \PY{n}{V}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Imágenes transformadas (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+		
+		\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{MMatrix} \PY{n}{avgs} \PY{o}{=} \PY{n}{compute\PYZus{}average\PYZus{}by\PYZus{}digit}\PY{p}{(}\PY{n}{transf\PYZus{}images}\PY{p}{,} \PY{n}{labels}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Promedios según dígito computados (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	 	\PY{n}{RESET\PYZus{}TIMER}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{string} \PY{n}{output\PYZus{}data\PYZus{}filename} \PY{o}{=} \PY{n}{write\PYZus{}data\PYZus{}file}\PY{p}{(}\PY{o}{*}\PY{n}{delta}\PY{p}{,} \PY{n}{V}\PY{p}{,} \PY{n}{avgs}\PY{p}{)}\PY{p}{;}
+	 	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Datos exportados al archivo }\PY{l+s}{"} \PY{o}{+} \PY{n}{output\PYZus{}data\PYZus{}filename} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ (}\PY{l+s}{"} \PY{o}{+} \PY{n}{int2str}\PY{p}{(}\PY{n}{MSECS\PYZus{}ELAPSED}\PY{p}{(}\PY{p}{)}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{ ms).}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+	\PY{p}{\PYZcb{}}
+
+	\PY{n}{PRINT\PYZus{}ON\PYZus{}VERBOSE}\PY{p}{(}\PY{l+s}{"}\PY{l+s}{Datos computados para todos los valores de delta. Terminando la ejecución...}\PY{l+s+se}{\PYZbs{}n}\PY{l+s}{"}\PY{p}{,} \PY{n}{args}\PY{p}{.}\PY{n}{verbose}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{l+m+mi}{0}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+\end{Verbatim}

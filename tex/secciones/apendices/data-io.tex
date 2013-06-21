@@ -1,0 +1,327 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}iostream\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}vector\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}fstream\PYZgt{}}
+\PY{k}{using} \PY{k}{namespace} \PY{n}{std}\PY{p}{;}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "..}\PY{c+cp}{/}\PY{c+cp}{lib}\PY{c+cp}{/}\PY{c+cp}{commons.h"}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "data-io.h"}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "mmatrix.h"}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 INVALID\PYZus{}FILE\PYZus{}FORMAT(fn)					("El formato del archivo " + fn + " es incorrecto" )}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 IMAGES\PYZus{}LABELS\PYZus{}INCONSISTENCY(igs,lbs)	("Los archivos \PYZbs{}"" + igs + "\PYZbs{}" y \PYZbs{}"" + lbs + "\PYZbs{}" no contienen la misma cantidad de elementos" )}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 FILE\PYZus{}NOT\PYZus{}FOUND(filename)				("El archivo \PYZbs{}"" + filename + "\PYZbs{}" no existe o se encuentra inutilizable")}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 FILE\PYZus{}NOT\PYZus{}CREATED(fn)					("No se pudo crear el archivo: " + fn)}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 IMAGE\PYZus{}HEIGHT\PYZus{}PXS	28}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 IMAGE\PYZus{}WIDTH\PYZus{}PXS		28}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 BYTE\PYZus{}2\PYZus{}INT(buff)		 	((int)(0xFF \PYZam{} ((unsigned char)*(buff))))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT(buff) 		((BYTE\PYZus{}2\PYZus{}INT(buff) \PYZlt{}\PYZlt{} 24) + (BYTE\PYZus{}2\PYZus{}INT(buff+1) \PYZlt{}\PYZlt{} 16) + (BYTE\PYZus{}2\PYZus{}INT(buff+2) \PYZlt{}\PYZlt{} 8)  + (BYTE\PYZus{}2\PYZus{}INT(buff+3) \PYZlt{}\PYZlt{} 0))}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define LIMIT	100000}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{ifdef \PYZus{}WIN64}
+	\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define		DIRECTORY\PYZus{}SEPARATOR		('\PYZbs{}\PYZbs{}')}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{elif \PYZus{}WIN32}
+	\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define		DIRECTORY\PYZus{}SEPARATOR		('\PYZbs{}\PYZbs{}')}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{elif \PYZus{}\PYZus{}linux}
+	\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define		DIRECTORY\PYZus{}SEPARATOR		('}\PY{c+cp}{/}\PY{c+cp}{')}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{endif}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define		BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN		(sizeof(double))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define		BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN		(sizeof(int))}
+
+\PY{k}{typedef} \PY{k}{union} \PY{p}{\PYZob{}}
+    \PY{k+kt}{char} \PY{n}{bytes}\PY{p}{[}\PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{]}\PY{p}{;}
+    \PY{k+kt}{int} \PY{n}{value}\PY{p}{;}
+\PY{p}{\PYZcb{}} \PY{n}{ByteArrayIntConverter}\PY{p}{;}
+
+\PY{k}{typedef} \PY{k}{union} \PY{p}{\PYZob{}}
+    \PY{k+kt}{char} \PY{n}{bytes}\PY{p}{[}\PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{]}\PY{p}{;}
+    \PY{k+kt}{double} \PY{n}{value}\PY{p}{;}
+\PY{p}{\PYZcb{}} \PY{n}{ByteArrayDoubleConverter}\PY{p}{;}
+
+\PY{n}{string} \PY{n}{get\PYZus{}file\PYZus{}basename}\PY{p}{(} \PY{n}{string} \PY{k}{const}\PY{o}{\PYZam{}} \PY{n}{path} \PY{p}{)}\PY{p}{;}
+
+\PY{c+c1}{//	//	//	//}
+
+\PY{k+kt}{void} \PY{n}{load\PYZus{}ubyte\PYZus{}images}\PY{p}{(}\PY{n}{string} \PY{n}{filename}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{images}\PY{p}{)}
+\PY{p}{\PYZob{}}
+
+	\PY{n}{ifstream} \PY{n}{file} \PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{in} \PY{o}{|} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{binary}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}FOUND}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k+kt}{char} \PY{n}{buffer}\PY{p}{[}\PY{l+m+mi}{4}\PY{p}{]}\PY{p}{;}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k+kt}{int} \PY{n}{magic\PYZus{}number} \PY{o}{=} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{;}
+	
+	\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k+kt}{int} \PY{n}{number\PYZus{}of\PYZus{}images} \PY{o}{=} \PY{n}{MIN}\PY{p}{(}\PY{n}{LIMIT}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	
+	\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k+kt}{int} \PY{n}{number\PYZus{}of\PYZus{}rows} \PY{o}{=} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{;}
+	
+	\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k+kt}{int} \PY{n}{number\PYZus{}of\PYZus{}cols} \PY{o}{=} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{;}
+	
+	\PY{k}{if}\PY{p}{(} \PY{n}{number\PYZus{}of\PYZus{}rows} \PY{o}{!}\PY{o}{=} \PY{n}{IMAGE\PYZus{}HEIGHT\PYZus{}PXS} \PY{o}{|}\PY{o}{|} \PY{n}{number\PYZus{}of\PYZus{}cols} \PY{o}{!}\PY{o}{=} \PY{n}{IMAGE\PYZus{}WIDTH\PYZus{}PXS} \PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{images}\PY{p}{.}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{number\PYZus{}of\PYZus{}images}\PY{p}{,} \PY{n}{number\PYZus{}of\PYZus{}rows} \PY{o}{*} \PY{n}{number\PYZus{}of\PYZus{}cols}\PY{p}{)}\PY{p}{;}
+	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{im} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{im} \PY{o}{\PYZlt{}} \PY{n}{number\PYZus{}of\PYZus{}images}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{im}\PY{p}{)}
+		\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{number\PYZus{}of\PYZus{}cols}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+			\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{number\PYZus{}of\PYZus{}rows}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+			\PY{p}{\PYZob{}}
+				\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{;}
+				\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)}
+					\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+				\PY{k+kt}{int} \PY{n}{n} \PY{o}{=} \PY{n}{i} \PY{o}{*} \PY{n}{number\PYZus{}of\PYZus{}cols} \PY{o}{+} \PY{n}{j}\PY{p}{;}
+				\PY{n}{images}\PY{p}{(}\PY{n}{im}\PY{p}{,} \PY{n}{n}\PY{p}{)} \PY{o}{=} \PY{p}{(}\PY{p}{(}\PY{k+kt}{double}\PY{p}{)}\PY{n}{BYTE\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+			\PY{p}{\PYZcb{}}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{load\PYZus{}ubyte\PYZus{}labels}\PY{p}{(}\PY{n}{string} \PY{n}{filename}\PY{p}{,} \PY{n}{vector}\PY{o}{\PYZlt{}}\PY{k+kt}{int}\PY{o}{\PYZgt{}}\PY{o}{\PYZam{}} \PY{n}{labels}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{ifstream} \PY{n}{file} \PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{in} \PY{o}{|} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{binary}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}FOUND}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	
+	\PY{k+kt}{char} \PY{n}{buffer}\PY{p}{[}\PY{l+m+mi}{4}\PY{p}{]}\PY{p}{;}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k+kt}{int} \PY{n}{magic\PYZus{}number} \PY{o}{=} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k+kt}{int} \PY{n}{number\PYZus{}of\PYZus{}items} \PY{o}{=} \PY{n}{MIN}\PY{p}{(}\PY{n}{LIMIT}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{number\PYZus{}of\PYZus{}items}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+	\PY{p}{\PYZob{}}
+		\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{buffer}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{;}
+		\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)}
+			\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+		\PY{n}{labels}\PY{p}{.}\PY{n}{push\PYZus{}back}\PY{p}{(}\PY{n}{BYTE\PYZus{}2\PYZus{}INT}\PY{p}{(}\PY{n}{buffer}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{p}{\PYZcb{}}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{load\PYZus{}mnist\PYZus{}data}\PY{p}{(}\PY{n}{string} \PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{string} \PY{n}{labels\PYZus{}filename}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{images}\PY{p}{,} \PY{n}{vector}\PY{o}{\PYZlt{}}\PY{k+kt}{int}\PY{o}{\PYZgt{}}\PY{o}{\PYZam{}} \PY{n}{labels}\PY{p}{)}
+\PY{p}{\PYZob{}}
+    \PY{n}{load\PYZus{}ubyte\PYZus{}images}\PY{p}{(}\PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{images}\PY{p}{)}\PY{p}{;}
+    \PY{n}{load\PYZus{}ubyte\PYZus{}labels}\PY{p}{(}\PY{n}{labels\PYZus{}filename}\PY{p}{,} \PY{n}{labels}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{n}{images}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{!}\PY{o}{=} \PY{n}{labels}\PY{p}{.}\PY{n}{size}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+        \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{IMAGES\PYZus{}LABELS\PYZus{}INCONSISTENCY}\PY{p}{(}\PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{labels\PYZus{}filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{string} \PY{n}{write\PYZus{}covariance\PYZus{}matrix\PYZus{}to\PYZus{}file}\PY{p}{(}\PY{n}{string} \PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{cov\PYZus{}mat}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{string} \PY{n}{filename} \PY{o}{=} \PY{n}{get\PYZus{}file\PYZus{}basename}\PY{p}{(}\PY{n}{images\PYZus{}filename}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{\PYZus{}covmat.mdat}\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{ofstream} \PY{n}{file} \PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{out} \PY{o}{|} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{binary}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}CREATED}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{ByteArrayIntConverter} \PY{n}{int\PYZus{}converter}\PY{p}{;}
+	\PY{n}{ByteArrayDoubleConverter} \PY{n}{double\PYZus{}converter}\PY{p}{;}
+
+    \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{cov\PYZus{}mat}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{cov\PYZus{}mat}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{cov\PYZus{}mat}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+    \PY{p}{\PYZob{}}
+    	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{cov\PYZus{}mat}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+    	\PY{p}{\PYZob{}}
+    		\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{cov\PYZus{}mat}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{;}
+    		\PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    	\PY{p}{\PYZcb{}}
+    \PY{p}{\PYZcb{}}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+
+    \PY{k}{return} \PY{n}{filename}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{load\PYZus{}covariance\PYZus{}matrix}\PY{p}{(}\PY{n}{string} \PY{n}{filename}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{cov\PYZus{}mat}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{ifstream} \PY{n}{file} \PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{in} \PY{o}{|} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{binary}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}FOUND}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{ByteArrayIntConverter} \PY{n}{int\PYZus{}converter}\PY{p}{;}
+	\PY{n}{ByteArrayDoubleConverter} \PY{n}{double\PYZus{}converter}\PY{p}{;}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{k+kt}{int} \PY{n}{rows} \PY{o}{=} \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{k+kt}{int} \PY{n}{cols} \PY{o}{=} \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{cov\PYZus{}mat}\PY{p}{.}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{rows}\PY{p}{,} \PY{n}{cols}\PY{p}{)}\PY{p}{;}
+    \PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{rows}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+    \PY{p}{\PYZob{}}
+    	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{cols}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+    	\PY{p}{\PYZob{}}
+    		\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    		\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    		\PY{n}{cov\PYZus{}mat}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)} \PY{o}{=} \PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+    	\PY{p}{\PYZcb{}}
+    \PY{p}{\PYZcb{}}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{string} \PY{n}{write\PYZus{}data\PYZus{}file}\PY{p}{(}\PY{k+kt}{double} \PY{n}{delta}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{V}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{avgs}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{string} \PY{n}{filename} \PY{o}{=} \PY{l+s}{"}\PY{l+s}{tp3\PYZus{}data\PYZus{}delta\PYZus{}}\PY{l+s}{"} \PY{o}{+} \PY{n}{double2str}\PY{p}{(}\PY{n}{delta}\PY{p}{)} \PY{o}{+} \PY{l+s}{"}\PY{l+s}{.mdat}\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{ofstream} \PY{n}{file} \PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{out} \PY{o}{|} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{binary}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}CREATED}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{ByteArrayIntConverter} \PY{n}{int\PYZus{}converter}\PY{p}{;}
+	\PY{n}{ByteArrayDoubleConverter} \PY{n}{double\PYZus{}converter}\PY{p}{;}
+
+    \PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{delta}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{V}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{V}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{V}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+    \PY{p}{\PYZob{}}
+    	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{V}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+    	\PY{p}{\PYZob{}}
+    		\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{V}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{;}
+    		\PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    	\PY{p}{\PYZcb{}}
+    \PY{p}{\PYZcb{}}
+
+    \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{avgs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{avgs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+    \PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+
+    \PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{avgs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+    \PY{p}{\PYZob{}}
+    	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{avgs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+    	\PY{p}{\PYZob{}}
+    		\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value} \PY{o}{=} \PY{n}{avgs}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{;}
+    		\PY{n}{file}\PY{p}{.}\PY{n}{write}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    	\PY{p}{\PYZcb{}}
+    \PY{p}{\PYZcb{}}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+
+    \PY{k}{return} \PY{n}{filename}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{load\PYZus{}data\PYZus{}file}\PY{p}{(}\PY{n}{string} \PY{n}{filename}\PY{p}{,} \PY{k+kt}{double}\PY{o}{\PYZam{}} \PY{n}{delta}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{V}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{avgs}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{ifstream} \PY{n}{file} \PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{in} \PY{o}{|} \PY{n}{ios}\PY{o}{:}\PY{o}{:}\PY{n}{binary}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}FOUND}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{ByteArrayIntConverter} \PY{n}{int\PYZus{}converter}\PY{p}{;}
+	\PY{n}{ByteArrayDoubleConverter} \PY{n}{double\PYZus{}converter}\PY{p}{;}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{n}{delta} \PY{o}{=} \PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{k+kt}{int} \PY{n}{rows} \PY{o}{=} \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{k+kt}{int} \PY{n}{cols} \PY{o}{=} \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{V}\PY{p}{.}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{rows}\PY{p}{,} \PY{n}{cols}\PY{p}{)}\PY{p}{;}
+    \PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{rows}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+    \PY{p}{\PYZob{}}
+    	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{cols}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+    	\PY{p}{\PYZob{}}
+    		\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    		\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    		\PY{n}{V}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)} \PY{o}{=} \PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+    	\PY{p}{\PYZcb{}}
+    \PY{p}{\PYZcb{}}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{n}{rows} \PY{o}{=} \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}INT\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    \PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    \PY{n}{cols} \PY{o}{=} \PY{n}{int\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+
+    \PY{n}{avgs}\PY{p}{.}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{rows}\PY{p}{,} \PY{n}{cols}\PY{p}{)}\PY{p}{;}
+    \PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{rows}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+    \PY{p}{\PYZob{}}
+    	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{cols}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+    	\PY{p}{\PYZob{}}
+    		\PY{n}{file}\PY{p}{.}\PY{n}{read}\PY{p}{(}\PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{bytes}\PY{p}{,} \PY{n}{BYTE\PYZus{}ARRAY\PYZus{}DOUBLE\PYZus{}LEN}\PY{p}{)}\PY{p}{;}
+    		\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{)} \PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}FILE\PYZus{}FORMAT}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+    		\PY{n}{avgs}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)} \PY{o}{=} \PY{n}{double\PYZus{}converter}\PY{p}{.}\PY{n}{value}\PY{p}{;}
+    	\PY{p}{\PYZcb{}}
+    \PY{p}{\PYZcb{}}
+
+	\PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{open\PYZus{}output\PYZus{}file}\PY{p}{(}\PY{n}{string} \PY{n}{filename}\PY{p}{,} \PY{n}{ofstream}\PY{o}{\PYZam{}} \PY{n}{file}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{file}\PY{p}{.}\PY{n}{open}\PY{p}{(}\PY{n}{filename}\PY{p}{.}\PY{n}{c\PYZus{}str}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{k}{if}\PY{p}{(}\PY{o}{!}\PY{n}{file}\PY{p}{.}\PY{n}{is\PYZus{}open}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{FILE\PYZus{}NOT\PYZus{}CREATED}\PY{p}{(}\PY{n}{filename}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{\PYZpc{} delta, k, archivo de imágenes clasificadas, cantidad de imágenes clasificadas, cantidad de aciertos}\PY{l+s}{"} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{endl}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{get\PYZus{}file\PYZus{}basename}\PY{p}{(}\PY{n}{filename}\PY{p}{)} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{ = \PYZob{} }\PY{l+s}{"} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{endl}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{write\PYZus{}results}\PY{p}{(}\PY{n}{ofstream}\PY{o}{\PYZam{}} \PY{n}{file}\PY{p}{,} \PY{k+kt}{double} \PY{n}{delta}\PY{p}{,} \PY{k+kt}{int} \PY{n}{k}\PY{p}{,} \PY{n}{string} \PY{n}{images\PYZus{}filename}\PY{p}{,} \PY{k+kt}{int} \PY{n}{total\PYZus{}images}\PY{p}{,} \PY{k+kt}{int} \PY{n}{hits}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s+se}{\PYZbs{}t}\PY{l+s}{\PYZob{}}\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{delta} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{, }\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{k} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{, }\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{'}\PY{l+s}{"} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{images\PYZus{}filename} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{', }\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{total\PYZus{}images} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{, }\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{hits}\PY{p}{;}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{\PYZcb{},}\PY{l+s}{"} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{endl}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{close\PYZus{}output\PYZus{}file}\PY{p}{(}\PY{n}{ofstream}\PY{o}{\PYZam{}} \PY{n}{file}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{file} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{\PYZcb{};}\PY{l+s}{"}\PY{p}{;}
+	\PY{n}{file}\PY{p}{.}\PY{n}{close}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{string} \PY{n}{get\PYZus{}file\PYZus{}basename}\PY{p}{(} \PY{n}{string} \PY{k}{const}\PY{o}{\PYZam{}} \PY{n}{path} \PY{p}{)}
+\PY{p}{\PYZob{}}
+    \PY{n}{string} \PY{n}{filename} \PY{o}{=} \PY{n}{path}\PY{p}{.}\PY{n}{substr}\PY{p}{(} \PY{n}{path}\PY{p}{.}\PY{n}{find\PYZus{}last\PYZus{}of}\PY{p}{(} \PY{n}{DIRECTORY\PYZus{}SEPARATOR} \PY{p}{)} \PY{o}{+} \PY{l+m+mi}{1} \PY{p}{)}\PY{p}{;}
+    \PY{n}{string} \PY{n}{basename} \PY{o}{=} \PY{n}{filename}\PY{p}{.}\PY{n}{substr}\PY{p}{(} \PY{l+m+mi}{0}\PY{p}{,} \PY{n}{filename}\PY{p}{.}\PY{n}{find\PYZus{}last\PYZus{}of}\PY{p}{(} \PY{l+s+sc}{'.'} \PY{p}{)} \PY{p}{)}\PY{p}{;}
+
+    \PY{k}{return} \PY{n}{basename}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+\end{Verbatim}
