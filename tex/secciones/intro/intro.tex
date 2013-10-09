@@ -30,4 +30,31 @@ Por lo tanto, para obtener $\V^{t}$ es necesario calcular los autovectores de la
 
 \subsection{Método de las potencias y deflación}
 
-...
+EL algoritmo comienza con un vector de norma 1 aleatorio $b_0$. El método utiliza la siguiente iteración: 
+
+$$b_{k+1} = \frac{Ab_k}{\|Ab_k\|}$$
+
+donde A es la matriz de entrada.
+
+Bajo la suposiciones: 
+\begin{itemize}
+  \item A tiene un autovalor que es estrictamente mayor en magnitud a los otro autovalores
+  \item El vector tiene una componente distinta de cero en la dirección del autovector asociado al autovalor principal.
+\end{itemize}
+
+Entonces una subsucesión de $b_k$ converge al autovector asociado al autovalor dominante.
+ 
+ 
+\subsection{Deflación}
+Necesitamos encontrar $k$ autovectores, pero el método de la potencia solo permite encontrar el dominante. Para resolver este problema, 
+luego de haber encontrado un un autovector, se realiza una transformación llamada deflación,
+que elimina el autovalor dominante de forma que podamos encontrar el siguiente.
+ 
+El algoritmo es el siguiente: \\
+
+Para cada $i=1$ a $k$: \\
+\indent \indent$v_i \leftarrow MetodoPotencia(A)$ \\
+\indent \indent$\lambda_i \leftarrow (v_i^t A v_i) / ( v_i^t v_i)$\\
+\indent \indent$A \leftarrow A - \lambda_i v_i v_i^t$ \\
+
+ 

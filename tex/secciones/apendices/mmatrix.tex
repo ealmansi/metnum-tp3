@@ -1,0 +1,284 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}cmath\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}iomanip\PYZgt{}}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include \PYZlt{}iostream\PYZgt{}}
+\PY{k}{using} \PY{k}{namespace} \PY{n}{std}\PY{p}{;}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "..}\PY{c+cp}{/}\PY{c+cp}{lib}\PY{c+cp}{/}\PY{c+cp}{commons.h"}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{include "mmatrix.h"}
+
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define INVALID\PYZus{}MATRIX\PYZus{}SIZE(rows,cols)			\PYZbs{}}
+\PY{c+cp}{		("Tamaño de matriz inválido; filas: " + int2str(rows) + ", columnas: " + int2str(cols))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define OUT\PYZus{}OF\PYZus{}BOUNDS(i,j)						\PYZbs{}}
+\PY{c+cp}{		("Índices fuera de rango; i: " + int2str(i) + ", j: " + int2str(j))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define OUT\PYZus{}OF\PYZus{}BOUNDS\PYZus{}LINEAR(n)					\PYZbs{}}
+\PY{c+cp}{		("Índice lineal fuera de rango; i: " + int2str(n))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define DIMENSIONS\PYZus{}MISMATCH(r1,r2,c1,c2)		\PYZbs{}}
+\PY{c+cp}{		("Las dimensiones no concuerdan; el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 DIMENSIONS\PYZus{}MISMATCH\PYZus{}MULT\PYZus{}INPLACE(r1,r2,c1,c2)	\PYZbs{}}
+\PY{c+cp}{		("Las dimensiones no concuerdan para la multiplicación in situ (el producto debe estar definido y la matriz derecha debe ser cuadrada); el lado izquierdo es de (" + int2str(r1) + ", " + int2str(c1) + "), y el lado derecho de (" + int2str(r2) + ", " + int2str(c2) + ")")}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 NEAR\PYZus{}ZERO\PYZus{}DIVISION(denom)	\PYZbs{}}
+\PY{c+cp}{		("Divisón por un valor cercano a cero: " + double2str(denom))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 DIMENSIONS\PYZus{}MISMATCH\PYZus{}TRANSP\PYZus{}INPLACE(rows,cols)	\PYZbs{}}
+\PY{c+cp}{		("No se puede trasponer in situ porque la matriz no es cuadrada; filas: " + int2str(rows) + ", columnas: " + int2str(cols))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 IN\PYZus{}RANGE(a,x,b)				(((a) \PYZlt{}= (x)) \PYZam{}\PYZam{} ((x) \PYZlt{} (b)))}
+\PY{c+cp}{\PYZsh{}}\PY{c+cp}{define	 NOT\PYZus{}IN\PYZus{}RANGE(a,x,b)			(!IN\PYZus{}RANGE((a),(x),(b)))}
+
+\PY{c+c1}{//	//	//	//}
+
+\PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{MMatrix}\PY{p}{(}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{initialize}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{MMatrix}\PY{p}{(}\PY{k+kt}{int} \PY{n}{rows}\PY{p}{,} \PY{k+kt}{int} \PY{n}{cols}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{initialize}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{rows}\PY{p}{,} \PY{n}{cols}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{MMatrix}\PY{p}{(}\PY{k+kt}{int} \PY{n}{rows}\PY{p}{,} \PY{k+kt}{int} \PY{n}{cols}\PY{p}{,} \PY{k+kt}{double} \PY{n}{value}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{initialize}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{rows}\PY{p}{,} \PY{n}{cols}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{n}{value}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{MMatrix}\PY{p}{(}\PY{k}{const} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{mat}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{initialize}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{mat}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{mat}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{n}{mat}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{o}{\PYZti{}}\PY{n}{MMatrix}\PY{p}{(}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{clean\PYZus{}up}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{initialize}\PY{p}{(}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{\PYZus{}data} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;}
+	\PY{n}{\PYZus{}rows} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;}
+	\PY{n}{\PYZus{}cols} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{clean\PYZus{}up}\PY{p}{(}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}data} \PY{o}{!}\PY{o}{=} \PY{l+m+mi}{0}\PY{p}{)}
+		\PY{k}{delete}\PY{p}{[}\PY{p}{]} \PY{n}{\PYZus{}data}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{k+kt}{int} \PY{n}{rows}\PY{p}{,} \PY{k+kt}{int} \PY{n}{cols}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{rows} \PY{o}{\PYZlt{}}\PY{o}{=} \PY{l+m+mi}{0} \PY{o}{|}\PY{o}{|} \PY{n}{cols} \PY{o}{\PYZlt{}}\PY{o}{=} \PY{l+m+mi}{0}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{INVALID\PYZus{}MATRIX\PYZus{}SIZE}\PY{p}{(}\PY{n}{rows}\PY{p}{,}\PY{n}{cols}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{clean\PYZus{}up}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+	\PY{n}{\PYZus{}data} \PY{o}{=} \PY{k}{new} \PY{k+kt}{double}\PY{p}{[}\PY{n}{rows}\PY{o}{*}\PY{n}{cols}\PY{p}{]}\PY{p}{;}
+	\PY{n}{\PYZus{}rows} \PY{o}{=} \PY{n}{rows}\PY{p}{;}
+	\PY{n}{\PYZus{}cols} \PY{o}{=} \PY{n}{cols}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{int} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{return} \PY{n}{\PYZus{}rows}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{int} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{cols}\PY{p}{(}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{return} \PY{n}{\PYZus{}cols}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{int} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{size}\PY{p}{(}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{return} \PY{n}{MAX}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,}\PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{row}\PY{p}{(}\PY{k+kt}{int} \PY{n}{r}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{n}{MMatrix} \PY{n}{row}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}v\PYZus{}i}\PY{p}{(}\PY{n}{row}\PY{p}{,} \PY{n}{v\PYZus{}i} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{r}\PY{p}{,} \PY{n}{i}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{row}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{copy\PYZus{}row}\PY{p}{(}\PY{k+kt}{int} \PY{n}{r}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{row}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{row}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{!}\PY{o}{=} \PY{l+m+mi}{1} \PY{o}{|}\PY{o}{|} \PY{n}{row}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)} \PY{o}{!}\PY{o}{=} \PY{n}{\PYZus{}cols}\PY{p}{)}
+		\PY{n}{row}\PY{p}{.}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{foreach\PYZus{}v\PYZus{}i}\PY{p}{(}\PY{n}{row}\PY{p}{,} \PY{n}{v\PYZus{}i} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{r}\PY{p}{,} \PY{n}{i}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{col}\PY{p}{(}\PY{k+kt}{int} \PY{n}{c}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{n}{MMatrix} \PY{n}{col}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}v\PYZus{}i}\PY{p}{(}\PY{n}{col}\PY{p}{,} \PY{n}{v\PYZus{}i} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{i}\PY{p}{,} \PY{n}{c}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{col}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{void} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{copy\PYZus{}col}\PY{p}{(}\PY{k+kt}{int} \PY{n}{c}\PY{p}{,} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{col}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{col}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{!}\PY{o}{=} \PY{n}{\PYZus{}rows} \PY{o}{|}\PY{o}{|} \PY{n}{col}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)} \PY{o}{!}\PY{o}{=} \PY{l+m+mi}{1}\PY{p}{)}
+		\PY{n}{col}\PY{p}{.}\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{foreach\PYZus{}v\PYZus{}i}\PY{p}{(}\PY{n}{col}\PY{p}{,} \PY{n}{v\PYZus{}i} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{i}\PY{p}{,} \PY{n}{c}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{o}{=}\PY{p}{(}\PY{k}{const} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{rvalue}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}rows} \PY{o}{!}\PY{o}{=} \PY{n}{rvalue}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{|}\PY{o}{|} \PY{n}{\PYZus{}cols} \PY{o}{!}\PY{o}{=} \PY{n}{rvalue}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{rvalue}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{rvalue}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{n}{rvalue}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{o}{*}\PY{k}{this}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{double}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{k+kt}{int} \PY{n}{n}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{NOT\PYZus{}IN\PYZus{}RANGE}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{n}\PY{p}{,} \PY{n}{\PYZus{}rows} \PY{o}{*} \PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{OUT\PYZus{}OF\PYZus{}BOUNDS\PYZus{}LINEAR}\PY{p}{(}\PY{n}{n}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{\PYZus{}data}\PY{p}{[}\PY{n}{n}\PY{p}{]}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{double} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{k+kt}{int} \PY{n}{n}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{NOT\PYZus{}IN\PYZus{}RANGE}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{n}\PY{p}{,} \PY{n}{\PYZus{}rows} \PY{o}{*} \PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{OUT\PYZus{}OF\PYZus{}BOUNDS\PYZus{}LINEAR}\PY{p}{(}\PY{n}{n}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{\PYZus{}data}\PY{p}{[}\PY{n}{n}\PY{p}{]}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{double}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{k+kt}{int} \PY{n}{i}\PY{p}{,} \PY{k+kt}{int} \PY{n}{j}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{NOT\PYZus{}IN\PYZus{}RANGE}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{i}\PY{p}{,}\PY{n}{\PYZus{}rows}\PY{p}{)} \PY{o}{|}\PY{o}{|} \PY{n}{NOT\PYZus{}IN\PYZus{}RANGE}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{j}\PY{p}{,}\PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{OUT\PYZus{}OF\PYZus{}BOUNDS}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{\PYZus{}data}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{n}{\PYZus{}cols}\PY{o}{+}\PY{n}{j}\PY{p}{]}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{k+kt}{double} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{k+kt}{int} \PY{n}{i}\PY{p}{,} \PY{k+kt}{int} \PY{n}{j}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{NOT\PYZus{}IN\PYZus{}RANGE}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{i}\PY{p}{,}\PY{n}{\PYZus{}rows}\PY{p}{)} \PY{o}{|}\PY{o}{|} \PY{n}{NOT\PYZus{}IN\PYZus{}RANGE}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{j}\PY{p}{,}\PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{OUT\PYZus{}OF\PYZus{}BOUNDS}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	
+	\PY{k}{return} \PY{n}{\PYZus{}data}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{n}{\PYZus{}cols}\PY{o}{+}\PY{n}{j}\PY{p}{]}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{o}{-}\PY{p}{(}\PY{k}{const} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{rhs}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}rows} \PY{o}{!}\PY{o}{=} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{|}\PY{o}{|} \PY{n}{\PYZus{}cols} \PY{o}{!}\PY{o}{=} \PY{n}{rhs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{DIMENSIONS\PYZus{}MISMATCH}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{\PYZus{}cols}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{MMatrix} \PY{n}{res}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{n}{res}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)} \PY{o}{-} \PY{n}{rhs}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{res}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{o}{*}\PY{o}{=}\PY{p}{(}\PY{k+kt}{double} \PY{n}{rhs}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)} \PY{o}{*} \PY{n}{rhs}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{o}{*}\PY{k}{this}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{o}{/}\PY{o}{=}\PY{p}{(}\PY{k+kt}{double} \PY{n}{rhs}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(} \PY{n}{abs}\PY{p}{(}\PY{n}{rhs}\PY{p}{)} \PY{o}{\PYZlt{}} \PY{n}{DBL\PYZus{}TOLERANCE\PYZus{}2\PYZus{}ZERO} \PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{NEAR\PYZus{}ZERO\PYZus{}DIVISION}\PY{p}{(}\PY{n}{rhs}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)} \PY{o}{/} \PY{n}{rhs}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{o}{*}\PY{k}{this}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{o}{*}\PY{p}{(}\PY{k}{const} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{rhs}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}cols} \PY{o}{!}\PY{o}{=} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{DIMENSIONS\PYZus{}MISMATCH}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{\PYZus{}cols}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{MMatrix} \PY{n}{res}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{n}{res}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{n}{dot\PYZus{}row\PYZus{}col}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{i}\PY{p}{,} \PY{n}{rhs}\PY{p}{,} \PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{res}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{k}{operator}\PY{o}{*}\PY{o}{=}\PY{p}{(}\PY{k}{const} \PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{rhs}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}cols} \PY{o}{!}\PY{o}{=} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{|}\PY{o}{|} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)} \PY{o}{!}\PY{o}{=} \PY{n}{rhs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{DIMENSIONS\PYZus{}MISMATCH\PYZus{}MULT\PYZus{}INPLACE}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{\PYZus{}cols}\PY{p}{,} \PY{n}{rhs}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{MMatrix} \PY{n}{aux\PYZus{}row}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,}\PY{p}{\PYZob{}}
+		\PY{k}{if}\PY{p}{(}\PY{n}{j} \PY{o}{=}\PY{o}{=} \PY{l+m+mi}{0}\PY{p}{)} \PY{n}{copy\PYZus{}row}\PY{p}{(}\PY{n}{i}\PY{p}{,} \PY{n}{aux\PYZus{}row}\PY{p}{)}\PY{p}{;}
+		\PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{n}{dot\PYZus{}row\PYZus{}col}\PY{p}{(}\PY{n}{aux\PYZus{}row}\PY{p}{,} \PY{l+m+mi}{0}\PY{p}{,} \PY{n}{rhs}\PY{p}{,} \PY{n}{j}\PY{p}{)}\PY{p}{;}
+	\PY{p}{\PYZcb{}}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{o}{*}\PY{k}{this}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{t}\PY{p}{(}\PY{p}{)} \PY{k}{const}
+\PY{p}{\PYZob{}}
+	\PY{n}{MMatrix} \PY{n}{res}\PY{p}{(}\PY{n}{\PYZus{}cols}\PY{p}{,} \PY{n}{\PYZus{}rows}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{n}{res}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{j}\PY{p}{,}\PY{n}{i}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{res}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{t\PYZus{}in\PYZus{}place}\PY{p}{(}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}rows} \PY{o}{!}\PY{o}{=} \PY{n}{\PYZus{}cols}\PY{p}{)}
+		\PY{n}{DISPLAY\PYZus{}ERROR\PYZus{}AND\PYZus{}EXIT}\PY{p}{(}\PY{n}{DIMENSIONS\PYZus{}MISMATCH\PYZus{}TRANSP\PYZus{}INPLACE}\PY{p}{(}\PY{n}{\PYZus{}rows}\PY{p}{,}\PY{n}{\PYZus{}cols}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij\PYZus{}lower\PYZus{}triangular}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,}\PY{p}{\PYZob{}}
+		\PY{n}{swap}\PY{p}{(}\PY{n}{a\PYZus{}ij}\PY{p}{,} \PY{k}{operator}\PY{p}{(}\PY{p}{)}\PY{p}{(}\PY{n}{j}\PY{p}{,}\PY{n}{i}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+	\PY{p}{\PYZcb{}}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{o}{*}\PY{k}{this}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{identity\PYZus{}matrix}\PY{p}{(}\PY{k+kt}{int} \PY{n}{size}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{MMatrix} \PY{n}{res}\PY{p}{(}\PY{n}{size}\PY{p}{,} \PY{n}{size}\PY{p}{)}\PY{p}{;}
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{n}{res}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{p}{(}\PY{p}{(}\PY{n}{i} \PY{o}{=}\PY{o}{=} \PY{n}{j}\PY{p}{)}\PY{o}{?}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{)}\PY{o}{:}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{res}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{MMatrix}\PY{o}{\PYZam{}} \PY{n}{MMatrix}\PY{o}{:}\PY{o}{:}\PY{n}{make\PYZus{}identity\PYZus{}matrix}\PY{p}{(}\PY{k+kt}{int} \PY{n}{size}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{k}{if}\PY{p}{(}\PY{n}{\PYZus{}rows} \PY{o}{!}\PY{o}{=} \PY{n}{size} \PY{o}{|}\PY{o}{|} \PY{n}{\PYZus{}cols} \PY{o}{!}\PY{o}{=} \PY{n}{size}\PY{p}{)}
+		\PY{n}{set\PYZus{}size}\PY{p}{(}\PY{n}{size}\PY{p}{,} \PY{n}{size}\PY{p}{)}\PY{p}{;}
+
+	\PY{n}{foreach\PYZus{}a\PYZus{}ij}\PY{p}{(}\PY{o}{*}\PY{k}{this}\PY{p}{,} \PY{n}{a\PYZus{}ij} \PY{o}{=} \PY{p}{(}\PY{p}{(}\PY{n}{i} \PY{o}{=}\PY{o}{=} \PY{n}{j}\PY{p}{)}\PY{o}{?}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{)}\PY{o}{:}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;}
+
+	\PY{k}{return} \PY{o}{*}\PY{k}{this}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+
+\PY{n}{ostream}\PY{o}{\PYZam{}} \PY{k}{operator}\PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}}\PY{p}{(}\PY{n}{ostream} \PY{o}{\PYZam{}}\PY{n}{os}\PY{p}{,} \PY{k}{const} \PY{n}{MMatrix} \PY{o}{\PYZam{}}\PY{n}{mat}\PY{p}{)}
+\PY{p}{\PYZob{}}
+	\PY{n}{os} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{[}\PY{l+s}{"}\PY{p}{;}
+	\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{i} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{i} \PY{o}{\PYZlt{}} \PY{n}{mat}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{i}\PY{p}{)}
+	\PY{p}{\PYZob{}}
+		\PY{k}{for} \PY{p}{(}\PY{k+kt}{int} \PY{n}{j} \PY{o}{=} \PY{l+m+mi}{0}\PY{p}{;} \PY{n}{j} \PY{o}{\PYZlt{}} \PY{n}{mat}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{;} \PY{o}{+}\PY{o}{+}\PY{n}{j}\PY{p}{)}
+		\PY{p}{\PYZob{}}
+			\PY{k}{if}\PY{p}{(} \PY{l+m+mi}{0} \PY{o}{\PYZlt{}} \PY{n}{i} \PY{o}{\PYZam{}}\PY{o}{\PYZam{}} \PY{n}{j} \PY{o}{=}\PY{o}{=} \PY{l+m+mi}{0} \PY{p}{)}
+				\PY{n}{os} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s+sc}{'\PYZbs{}t'}\PY{p}{;}
+			\PY{n}{os} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{setw}\PY{p}{(}\PY{l+m+mi}{20}\PY{p}{)} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{mat}\PY{p}{(}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{)}\PY{p}{;}
+			\PY{k}{if}\PY{p}{(}\PY{n}{j} \PY{o}{+} \PY{l+m+mi}{1} \PY{o}{\PYZlt{}} \PY{n}{mat}\PY{p}{.}\PY{n}{cols}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+				\PY{n}{os} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{ }\PY{l+s}{"}\PY{p}{;}
+		\PY{p}{\PYZcb{}}
+		\PY{k}{if}\PY{p}{(}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1} \PY{o}{\PYZlt{}} \PY{n}{mat}\PY{p}{.}\PY{n}{rows}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+			\PY{n}{os} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{n}{endl}\PY{p}{;}
+	\PY{p}{\PYZcb{}}
+	\PY{n}{os} \PY{o}{\PYZlt{}}\PY{o}{\PYZlt{}} \PY{l+s}{"}\PY{l+s}{]}\PY{l+s}{"}\PY{p}{;}
+
+	\PY{k}{return} \PY{n}{os}\PY{p}{;}
+\PY{p}{\PYZcb{}}
+\end{Verbatim}

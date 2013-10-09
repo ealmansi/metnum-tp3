@@ -1,0 +1,15 @@
+
+Los resultados obtenidos corroboran que si se descartan demasiados componentes principales el método se vuelve ineficaz. Esto a la vez 
+depende del valor de delta escogido. Cuanto mayor es delta, mas empeoran los resultados al quitar muchas componentes.
+
+Al calcular los autovectores con mucha precisión se requieren pocas componentes para obtener los 
+mismo resultados que utilizando menos precisión con muchas componentes. 
+En concreto utilizando delta 0.1 se requieren como mínimo unas 200 componentes para el nivel óptimo de aciertos, mientras que con delta 0.01
+se requieren solo 60.
+
+Esto es una relación de compromiso teniendo en cuenta que cuanto menor es delta, se requiere mayor tiempo de ejecución.
+Relación que se puede desempatar cuando se observa que según el delta hay valores máximos de aciertos , y que es mayor en cuanto el delta es menor.
+Como se observa en el gráfico la diferencia entre los niveles de aciertos son importantes para los delta 0.1 y 0.01.
+
+Luego para deltas menores a 0.01 el nivel de acierto no se ve incrementado considerablemente y teniendo en cuenta que si se incrementa el tiempo de
+ejecución, significa que no tiene mucho sentido utilizar $deltas < 0.01$
